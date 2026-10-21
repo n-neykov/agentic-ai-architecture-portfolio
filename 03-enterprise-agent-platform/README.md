@@ -1,6 +1,6 @@
 # Project 03 — Governed Enterprise Agent Platform
 
-**Status:** Executable offline synthetic governance reference prototype with Streamlit workspace and automated tests. No real IAM, live enterprise tools or deployed Azure infrastructure.
+**Status:** Executable synthetic governance prototype with deterministic offline mode and optional Azure GPT-4.1 mini natural-language tool routing. No real IAM, live enterprise tools or deployed Azure infrastructure.
 
 ## Client scenario
 
@@ -22,6 +22,10 @@ flowchart TD
   A -->|"Read-only"| R["Tenant-filtered synthetic records"]
   R --> O["Allow + audit"]
 ```
+
+### Optional Azure mode
+
+Choose **AI tool selection · Azure Foundry** in Governed tool execution. Submit a synthetic natural-language request. The model can nominate only a registered tool name, with no account, tenant or authorization arguments. Unverified and cross-tenant requests are rejected before inference. After selection, Python independently enforces role permissions and approval gates; payment writes remain disconnected. Unsupported or malformed model output fails closed. The same Project 01 .env configuration is reused.
 
 ### Working capabilities
 
