@@ -1,6 +1,6 @@
 # Agent Control Center — Dashboard guide
 
-**Project 01:** working synthetic customer-service prototype. **Projects 02–03:** working offline synthetic prototypes.
+**Project 01:** working synthetic customer-service prototype. **Projects 02–03:** working synthetic prototypes with offline and optional Azure Foundry modes.
 
 ## Launch
 
@@ -31,9 +31,9 @@ The sidebar's identity selector is a **simulated principal**, not a real sign-in
 
 ## Projects 02 and 03
 
-Project 02 provides **Overview**, **Document execution**, and **Architecture**. Use the valid invoice, duplicate submission, missing amount and bank-account review fixtures. Source provenance is line-level, not page-level OCR.
+Project 02 provides **Overview**, **Document execution**, and **Architecture**, including **Deterministic offline** and **AI-assisted · Azure Foundry** extraction. Use the valid invoice, duplicate submission, missing amount and bank-account review fixtures. Source provenance is line-level, not page-level OCR.
 
-Project 03 provides **Overview**, **Governed tool execution**, and **Architecture**. Demonstrate role and cross-tenant denials, approval-required writes, and structured audit evidence. Verification flags and approvals are simulated.
+Project 03 provides **Overview**, **Governed tool execution**, and **Architecture**, including **Deterministic offline** and **AI tool selection · Azure Foundry** routing. Demonstrate role and cross-tenant denials, approval-required writes, and structured audit evidence. Verification flags and approvals are simulated.
 
 Architecture views use consistent responsive stages and distinct permitted/blocked outcomes instead of horizontally compressed Graphviz diagrams.
 
