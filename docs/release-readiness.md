@@ -9,9 +9,9 @@
 | Azure Foundry GPT-4.1 mini Responses API | **Live validated by user** | Working local project endpoint/deployment; no performance certification |
 | Synthetic read-only account adapter | Implemented | Session-scoped fixture balances; demo identity is unverified |
 | Cross-account and high-risk screening | Implemented for known patterns | User-tested zero-model-call denials; not comprehensive security assurance |
-| Approved FAQ knowledge base | **12 records implemented** | New topic tests committed; updated suite still needs verification |
-| Baseline evaluation | **10 scenarios** | User confirmed 10/10 before FAQ expansion; deterministic baseline only |
-| Unit and workflow tests | **53 passed before FAQ expansion** | New test cases need rerun; do not claim a new count yet |
+| Approved FAQ knowledge base | **12 records implemented** | 12-topic knowledge base implemented; latest suite needs rerun |
+| Baseline evaluation | **10 scenarios** | User confirmed 10/10 previously; rerun on final commit; deterministic baseline only |
+| Unit and workflow tests | **93 passed before final Azure hardening** | Additional P2 safety tests committed; latest suite requires rerun |
 | Dashboard and architecture visualization | Implemented | Two modes; screenshots still to be captured from final version |
 | CI | Configured | Workflow runs compile, tests and baseline evaluation; new branch run not independently confirmed |
 | Verified OIDC/Entra identity | Not implemented | Production blocker |
