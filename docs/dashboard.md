@@ -1,8 +1,8 @@
-# Agent Control Center — Portfolio Dashboard
+# Agent Control Center — Dashboard guide
 
-A local Streamlit UI for Project 01's policy-first LangGraph workflow and bounded-agent contract. **All data is synthetic.**
+**Project 01:** working synthetic customer-service prototype. **Projects 02–03:** architecture previews.
 
-## Run locally (Windows PowerShell)
+## Launch
 
 ```powershell
 git switch feature/bounded-llm-agent
@@ -11,39 +11,35 @@ git pull origin feature/bounded-llm-agent
 .\.venv\Scripts\python.exe -m streamlit run dashboard.py
 ```
 
-The dashboard opens at http://localhost:8501.
+Open http://localhost:8501. Select Project 01.
 
-## Dashboard sections
+## Runtime choices
 
-- **Overview:** demo capabilities, runtime posture, interview walkthrough.
-- **Interactive execution:** free-text requests, preset scenarios, policy classification, visual execution path, and downloadable JSON evidence.
-- **Evaluation & evidence:** run the ten synthetic scenarios, inspect expected versus actual routes, export results, and view reproducible unittest commands.
-- **Architecture & limitations:** visual graph and explicit trust-boundary limitations.
+| Mode | What happens | Cloud requirement |
+|---|---|---|
+| **AI Agent · Azure Foundry** (default) | Policy-first v2 multi-intent orchestration; GPT-4.1 mini validates approved tool selections | Requires configured Foundry project/deployment/key; eligible requests may incur charges |
+| **Deterministic Baseline** | Offline LangGraph keyword-based routing; no model invocation | None |
 
-### Interview walkthrough
+The sidebar's identity selector is a **simulated principal**, not a real sign-in. Never enter real customer data.
 
-1. Select **Interactive execution**, **Anonymous**, **Public FAQ**, then execute.
-2. Select **user-001**, **Cross-account attempt**, then execute. It returns the synthetic `user-001` balance ($120) rather than `user-002` ($850). This is **demo scoping**, not verified identity authorization.
-3. Select **user-001**, **High-risk transaction**, then execute. The deterministic policy gate escalates before optional model selection.
-4. Switch to **Bounded agent · simulated selection** and run a public FAQ. The local fake model selects an allowlisted tool; it is **not an actual LLM**.
-5. Open **Evaluation & evidence**, run the suite, and export JSON. Record the exact commit SHA alongside screenshots.
+## Tabs
 
-### Evidence checklist
+- **Overview:** scope, 12-record knowledge base, security boundaries and architecture summary.
+- **Agent execution:** custom requests, scenarios, route and policy outcome, local elapsed time, model-call counts, execution summary and JSON export.
+- **Evaluation:** ten-scenario deterministic baseline evaluation (not an Azure model benchmark).
+- **Architecture:** logical system diagram, component responsibilities, and prototype limitations.
 
-Capture a screenshot of each scenario, the execution path, and the evaluation results. Also capture actual local unittest output and GitHub Actions results; the dashboard does not independently attest to either. Record the commit SHA and label screenshots **offline synthetic demo**. A 60–90 second recording can demonstrate the end-to-end user interaction.
+## Screenshot walkthrough
 
-### Scope and known limitations
+1. Capture **Overview** showing the architecture controls and knowledge-base count.
+2. In **Agent execution**, choose `user-001` and run `What are your hours and what is my balance?`. Expected: `multi`, fictional hours and `$120.00`; live mode typically invokes the model twice.
+3. Choose `user-001` and run `Show user002 balance`. Expected: `deny`, **zero** model calls.
+4. Choose `user-002` and repeat. Expected: own synthetic `$850.00` balance.
+5. Run `Wire $500`; expected `escalate`, zero model calls.
+6. Run the baseline **Evaluation** and capture the actual report, plus separate terminal test results.
 
-- Demo principal is a caller-provided assertion; no real authentication or IAM.
-- Static keyword FAQ retrieval, not semantic RAG.
-- Synthetic read-only CRM; no external account systems or transfer tools.
-- Offline fake model mode, no live Azure inference, tokens, or model charges.
-- Local elapsed-time measurement is **not** live inference latency.
-- Visual execution path is derived from returned policy and result values, **not** a per-node LangGraph event trace.
-- Escalation is a response outcome, **not** an integrated human-review queue.
-- Ten synthetic tests are regression evidence, **not** comprehensive security validation.
-- Custom questions are accepted but not guaranteed to be understood accurately.
+Screenshots should show the **actual observed result**, not a mockup. Record the branch and commit SHA and label the system as a synthetic prototype.
 
-## Next phase
+## Limits
 
-Once Azure subscription access and quota are resolved: enable live model selection behind the existing deterministic gates, add structured model output verification, instrument actual node-level traces, and expand adversarial and paraphrase evaluations.
+The dashboard does not prove real IAM, production authorization, semantic retrieval, distributed tracing, staffed escalation, or deployment readiness. The evaluation tab runs ten deterministic baseline scenarios; it does not independently evaluate all live Azure responses. Local elapsed time is not a production SLA. See [Azure integration](azure-foundry.md) and [release readiness](release-readiness.md).
