@@ -2,12 +2,12 @@
 
 **Independent architecture and engineering portfolio** · Python · LangGraph · Azure AI Foundry · Streamlit
 
-Three fictional enterprise case studies share a local Streamlit workspace. **Project 01 is an executable, synthetic customer-service prototype with a user-verified live GPT-4.1 mini integration.** Projects 02 and 03 are architecture previews, not working services.
+Three fictional enterprise case studies share a local Streamlit workspace. **Project 01 is an executable, synthetic customer-service prototype with a user-verified live GPT-4.1 mini integration.** Projects 02 and 03 are now executable offline synthetic reference prototypes, not deployed services.
 
 | Project | Scope | Status |
 |---|---|---|
 | [01 · Secure Customer Service](01-customer-support-agent/README.md) | Policy-first AI orchestration, 12 approved FAQs, scoped synthetic account reads, multi-intent requests | **Working prototype** |
-| [02 · Document Processing](02-document-processing/README.md) | Extraction, validation, exception handling | Architecture preview |
+| [02 · Document Processing](02-document-processing/README.md) | Extraction, validation, exception handling | **Working offline prototype** |
 | [03 · Enterprise Agent Platform](03-enterprise-agent-platform/README.md) | Tool governance, registry, identity, audit | Architecture preview |
 
 ## Project 01 — Why this architecture?
@@ -92,3 +92,11 @@ The user confirmed **53/53 automated tests passing** and **10/10 baseline evalua
 The dashboard provides an overview, interactive execution, baseline evaluation, and architecture diagram. Capture screenshots of the overview, an approved multi-intent execution, a blocked cross-account request with zero model calls, and the evaluation results. Label all outputs **synthetic prototype**, and record the branch/commit SHA. A short screen recording is more accessible than requiring a reviewer to configure Azure.
 
 **Security:** Never submit real customer data or secrets. Live Azure inference can incur charges. No production customer systems are connected.
+
+## Projects 02 and 03 — Executable offline prototypes
+
+**Project 02:** Synthetic invoice, tax-form and agreement intake; deterministic field extraction with line evidence; validation; human-review gate; tenant-scoped in-memory idempotency and staging. [Details](02-document-processing/README.md).
+
+**Project 03:** Synthetic enterprise tool gateway with registered capabilities, simulated principals, tenant and role policy, approval checks, scoped records and audit events. Sensitive writes remain disconnected. [Details](03-enterprise-agent-platform/README.md).
+
+Both projects have dashboard workspaces and automated tests. They do not use Azure model inference or real enterprise integrations. Follow the [final three-project acceptance plan](docs/portfolio-test-plan.md) before merging.
