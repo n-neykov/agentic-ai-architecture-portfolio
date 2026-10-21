@@ -232,7 +232,7 @@ if project.startswith("01"):
                 }
             st.caption("AI Agent mode sends approved request text to Azure Foundry and may incur charges. Baseline mode is offline. Use synthetic data only.")
         with right:
-            st.markdown("#### Safety posture")
+            st.markdown("#### Execution safeguards")
             st.markdown("**Policy-first:** deterministic controls precede optional tool selection.")
             st.markdown("**Least privilege:** only synthetic, read-only account access.")
             st.markdown("**Fail closed:** unsupported requests or invalid model output escalate.")
@@ -256,7 +256,10 @@ if project.startswith("01"):
             st.caption("Elapsed time is end-to-end local execution, including network latency when live inference is attempted. It is not a production SLA.")
 
             st.markdown("#### Execution path")
-            st.caption("Evidence-derived workflow summary. These are NOT instrumented per-node LangGraph events.")
+            st.caption("Application-derived policy and tool decisions; not distributed tracing or per-node LangGraph telemetry.")
+            if result.get("steps"):
+                with st.expander("View recorded agent decisions", expanded=False):
+                    st.dataframe(result["steps"], use_container_width=True, hide_index=True)
             center, detail = st.columns([1.3, .7], gap="large")
             with center:
                 panel("INPUT", "Request received",
@@ -300,7 +303,7 @@ if project.startswith("01"):
 
     with evaluation_tab:
         st.subheader("Reproducible synthetic evaluation")
-        st.caption("The evaluation checks ten predefined routing scenarios. It is not an adversarial benchmark or a production security assessment.")
+        st.caption("Ten deterministic baseline routing checks. This does not benchmark GPT-4.1 mini or certify production security.")
         if st.button("Run 10-scenario evaluation", type="primary"):
             st.session_state["evaluation"] = evaluate()
         report = st.session_state.get("evaluation")
