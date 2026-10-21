@@ -11,19 +11,23 @@ A fictional supplier onboarding team processes invoices, tax forms and agreement
 ```mermaid
 flowchart TD
   I["Synthetic text document + tenant"] --> H["Tenant-scoped content hash / duplicate check"]
-  H --> C["Document type classification"]
-  C --> X["Regex field extraction + source-line evidence"]
+  H --> M{"Execution mode"}
+  M -->|Offline| C["Deterministic classification and regex extraction"]
+  M -->|Azure| A["GPT-4.1 mini classification and field proposal"]
+  A --> X["Verify proposed fields against source lines; preserve grounded labels"]
+  C --> X
   X --> V{"Required fields / vendor / business-rule validation"}
+  X -->|"Invalid model output"| F["Fail closed: needs review, no staging"]
   V -->|"Valid"| S["In-memory synthetic staging"]
   V -->|"Missing / invalid"| R["Needs review; correction required"]
-  V -->|"Bank account field"| A["Named simulated reviewer approval"]
-  A --> S
+  V -->|"Bank account field"| G["Named simulated reviewer approval"]
+  G --> S
   R --> M["Manual correction outside demo"]
 ```
 
 ### Optional Azure mode
 
-Choose **AI-assisted · Azure Foundry** in Document execution. The shared Project 01 .env config is used. GPT-4.1 mini proposes document type and JSON fields. Python checks that every returned field exactly matches the original labeled source line, detects bank details independently, and runs the same validation/review/staging gates. A malformed response, ungrounded field or model outage results in **needs_review** with no staging. Offline and Azure document fingerprints are separated. No OCR or live supplier integrations are implied.
+Choose **AI-assisted · Azure Foundry** in Document execution. The shared Project 01 .env config is used. GPT-4.1 mini proposes document type and JSON fields. Python checks that every returned field exactly matches the original labeled source line, checks classification against the document header, preserves deterministically grounded labeled fields (including bank details), and runs the same validation/review/staging gates. A malformed response, ungrounded field or model outage results in **needs_review** with no staging. Offline and Azure document fingerprints are separated. No OCR or live supplier integrations are implied.
 
 ### Working capabilities
 
@@ -37,6 +41,8 @@ Choose **AI-assisted · Azure Foundry** in Document execution. The shared Projec
 - Structured audit events and downloadable JSON evidence.
 - Automated offline regression tests.
 
+**Observed live limitation:** The valid Azure invoice staged successfully. The Azure agreement test previously returned `model_inference_failed` rather than reaching the bank-detail review rule. The extraction hardening and regression tests target this scenario; rerun the live agreement case before claiming successful model-assisted review.
+
 ### Demo walkthrough
 
 Select **02 · Intelligent Document Processing** in Streamlit. Run **Valid invoice** (staged), run it again (duplicate, not staged twice), run **Missing invoice amount** (needs review and cannot be approved), then run **Agreement requiring review** (approval required; named simulated reviewer may stage it).
@@ -48,7 +54,7 @@ Select **02 · Intelligent Document Processing** in Streamlit. Run **Valid invoi
 
 ## Trust boundaries and limitations
 
-The intake engine accepts **plain synthetic text**, not uploaded PDFs or scanned images. It does not perform OCR, malware scanning, document AI inference, model confidence scoring, or real source-page citations; evidence is a **source-line reference**. Tenant and reviewer identities are simulated, not verified. State, approvals, audit and staging are **in memory only**, not durable or transactionally safe. No ERP API or payment write exists.
+The intake engine accepts **plain synthetic text**, not uploaded PDFs or scanned images. It does not perform OCR, malware scanning, model confidence scoring, or real source-page citations; evidence is a **source-line reference**. Tenant and reviewer identities are simulated, not verified. State, approvals, audit and staging are **in memory only**, not durable or transactionally safe. No ERP API or payment write exists.
 
 ### Enterprise extension
 
