@@ -1,17 +1,17 @@
 # Agent Control Center — Dashboard guide
 
-**Project 01:** working synthetic customer-service prototype. **Projects 02–03:** architecture previews.
+**Project 01:** working synthetic customer-service prototype. **Projects 02–03:** working offline synthetic prototypes.
 
 ## Launch
 
 ```powershell
-git switch feature/bounded-llm-agent
-git pull origin feature/bounded-llm-agent
+git switch main
+git pull origin main
 .\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
 .\.venv\Scripts\python.exe -m streamlit run dashboard.py
 ```
 
-Open http://localhost:8501. Select Project 01.
+Open http://localhost:8501. Select any of the three project workspaces.
 
 ## Runtime choices
 
@@ -27,7 +27,15 @@ The sidebar's identity selector is a **simulated principal**, not a real sign-in
 - **Overview:** scope, 12-record knowledge base, security boundaries and architecture summary.
 - **Agent execution:** custom requests, scenarios, route and policy outcome, local elapsed time, model-call counts, execution summary and JSON export.
 - **Evaluation:** ten-scenario deterministic baseline evaluation (not an Azure model benchmark).
-- **Architecture:** logical system diagram, component responsibilities, and prototype limitations.
+- **Architecture:** accessible, vertically organized trust-boundary stages, controlled outcome cards, component responsibilities, and prototype limitations.
+
+## Projects 02 and 03
+
+Project 02 provides **Overview**, **Document execution**, and **Architecture**. Use the valid invoice, duplicate submission, missing amount and bank-account review fixtures. Source provenance is line-level, not page-level OCR.
+
+Project 03 provides **Overview**, **Governed tool execution**, and **Architecture**. Demonstrate role and cross-tenant denials, approval-required writes, and structured audit evidence. Verification flags and approvals are simulated.
+
+Architecture views use consistent responsive stages and distinct permitted/blocked outcomes instead of horizontally compressed Graphviz diagrams.
 
 ## Screenshot walkthrough
 
