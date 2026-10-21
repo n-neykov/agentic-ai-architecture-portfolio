@@ -181,7 +181,7 @@ with execution_tab:
                     meter = MeteredModel(make_azure_model())
                     result = run_agent(message, ctx, meter)
                     attempted, completed = meter.attempted, meter.completed
-                    status = ("completed" if completed else "request failed or no model call")
+                    status = ("completed" if completed else "blocked by deterministic policy" if policy in ("escalate", "deny") else "model invocation failed or returned no result")
                 except Exception:
                     # Configuration errors are not exposed; avoid leaking URLs/keys.
                     result = {"route": "escalate", "selected_tool": None,
