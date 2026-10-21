@@ -111,9 +111,13 @@ with st.sidebar:
                              help="Caller-provided demonstration context; NOT verified authentication.")
     st.divider()
     st.markdown("**Runtime indicators**")
-    st.success("● Offline backend available")
-    st.info("Real model inference: disabled")
-    st.caption("No live Azure endpoint, production CRM, verified IAM, or transfer capability.")
+    st.success("● Local policy backend available")
+    if mode.startswith("GPT-4.1"):
+        st.warning("● Live Foundry selected · API calls may incur charges")
+        st.caption("Live inference is attempted only for policy-permitted requests. Check execution metadata for completed calls.")
+    else:
+        st.info("● Offline mode · No real model inference")
+    st.caption("No production CRM, verified IAM, or transfer capability.")
     st.divider()
     st.caption("Evidence labels are intentionally conservative: synthetic fixtures, local evaluations, and summarized execution states.")
 
