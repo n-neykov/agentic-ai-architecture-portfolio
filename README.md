@@ -129,3 +129,12 @@ An optional model-driven agent selects one of three approved tools (FAQ lookup, 
 | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI install, compilation, tests, synthetic evaluation and offline smoke test |
 
 **Scope:** Independent educational reference work using fictional scenarios. Implemented, proposed and unverified capabilities are explicitly separated.
+
+## Interactive Agent Control Center
+
+Run the offline Streamlit dashboard to demonstrate actual LangGraph routing, synthetic account isolation, human escalation, and the 10-scenario evaluation. The optional simulated model mode uses a **fake local model, not Azure inference**. See [dashboard instructions](docs/dashboard.md).
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
+.\.venv\Scripts\python.exe -m streamlit run dashboard.py
+```
