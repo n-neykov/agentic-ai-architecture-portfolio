@@ -1,18 +1,23 @@
-# ADR-002 — Azure OpenAI with LangGraph
+# ADR-002 — Azure AI Foundry with replaceable orchestration
 
-**Status:** Accepted for prototype
+**Status: Accepted; live Foundry integration user-verified**
 
 ## Decision
-Use LangGraph for explicit graph transitions and Azure OpenAI through a replaceable Python adapter for supported public FAQ generation.
+
+Use a local Python adapter supporting Azure AI Foundry project's Responses API and legacy Azure OpenAI resource endpoints. The primary v2 mode uses GPT-4.1 mini for bounded tool selection. Keep an offline deterministic LangGraph baseline and fake-model unit tests for repeatability.
 
 ## Rationale
-LangGraph makes branching, state and error paths visible. Azure OpenAI aligns with Microsoft-centric enterprise architecture, but model inference remains an optional dependency so offline tests run without cloud resources.
+
+Foundry provides a managed model endpoint while the application retains authority for identity scoping, tool arguments and safety vetoes. Keeping the inference adapter separate enables local tests without Azure credentials.
+
+## Implemented technical contract
+
+The Foundry adapter normalizes a project endpoint to `/openai/v1/`, calls the OpenAI SDK Responses API with separate system instructions and user inputs, sets `store=False`, and limits output tokens/retries. The server parses a strict allowlisted JSON tool decision. No native provider-managed tool execution is claimed.
 
 ## Alternatives
-Azure-managed agent orchestration, a custom orchestration framework, and deterministic templates only.
+
+Fully managed agent orchestration, custom multi-agent infrastructure, and deterministic templates only.
 
 ## Consequences
-Requires Python dependencies, Azure resource provisioning and cost monitoring for live use. The adapter does not constitute a verified Azure deployment.
 
-## Validation
-Run dependency-free tests locally; run full graph tests in CI; run optional live Azure smoke tests only after credentials and budget controls are configured.
+Live inference introduces cloud latency, charges, endpoint/credential management and model failure modes. No production cost/SLA measurement, Entra authentication, or deployed service is provided. See [Azure integration](../docs/azure-foundry.md).
