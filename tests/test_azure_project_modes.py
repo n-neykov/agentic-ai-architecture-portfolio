@@ -46,6 +46,20 @@ class AzureDocumentTests(unittest.TestCase):
         self.assertEqual(result["status"], "needs_review")
         self.assertIn("sensitive_bank_details_require_review", result["issues"])
 
+    def test_agreement_review_when_model_omits_sensitive_field(self):
+        model = FakeModel({"document_type": "supplier_agreement", "fields": {
+            "vendor_id": "VEN-002", "effective_date": "2026-11-01"}})
+        result = IntakeEngine().process(SAMPLES["Agreement requiring review"], model=model)
+        self.assertEqual(result["status"], "needs_review")
+        self.assertIn("sensitive_bank_details_require_review", result["issues"])
+        self.assertEqual(result["fields"]["bank_account"], "DEMO-12345")
+        self.assertNotIn("model_inference_failed", result["issues"])
+
+    def test_conflicting_classification_fails_closed(self):
+        model = FakeModel({"document_type": "invoice", "fields": {"vendor_id": "VEN-002"}})
+        result = IntakeEngine().process(SAMPLES["Agreement requiring review"], model=model)
+        self.assertEqual(result["issues"], ["model_inference_failed"])
+
     def test_model_failure_does_not_poison_retry(self):
         engine = IntakeEngine()
         fail = FakeModel(error=RuntimeError("test outage"))
