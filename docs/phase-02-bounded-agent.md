@@ -1,47 +1,32 @@
-# Phase 2 — Bounded model-driven tool selection
+# Evolution of Project 01 — Bounded model selection and v2 orchestration
 
-**Status:** Implemented reference code on a feature branch. Fake-model contract tests are supplied; a real Azure OpenAI agent call is **not yet validated**.
+**Status:** implemented and user-verified with Azure AI Foundry GPT-4.1 mini. This is an engineering evolution within Project 01, not Project 02 of the portfolio.
 
-## What is new
+## Development progression
 
-The original workflow uses deterministic keyword-based classification. This optional mode asks an LLM to select one of three tools using a strictly validated JSON decision:
+1. **Deterministic LangGraph baseline:** policy-first routing, public FAQ lookup, simulated account reads and safe fallback.
+2. **Bounded model selection:** JSON allowlist `faq_lookup`, `account_balance`, `escalate`; server-side veto and scoped tool arguments.
+3. **V2 agent:** deterministic multi-intent planning, `session_info`, composite FAQ/balance responses, policy/tool execution steps, optional live Foundry tool-selection validation.
+4. **Knowledge expansion:** 12 categorized synthetic FAQ records with stable evidence IDs and offline regression tests.
 
-- `faq_lookup`: approved static keyword corpus; no arbitrary web or database access
-- `account_balance`: read-only synthetic CRM, always scoped to server-supplied demo principal
-- `escalate`: route to human review
+## Why not an unrestricted agent?
 
-The LLM selects a tool, **not its arguments or permissions**. A deterministic policy veto runs before the model and again before each adapter. Sensitive actions never reach the model; unknown or invalid model outputs fail closed.
+The architecture deliberately limits authority. The model may propose an approved operation but cannot select an arbitrary account record, perform writes, or override policy. This is not autonomous planning or provider-native tool execution. The policy vocabulary remains narrow, and unknown requests may escalate.
 
-## Why hybrid rather than unrestricted autonomy?
+## Azure implementation
 
-| Choice | Advantage | Tradeoff |
-|---|---|---|
-| Fully autonomous tool-calling agent | Flexible planning | Harder to bound authority and demonstrate safety |
-| Fully deterministic router (baseline) | Simple, repeatable, inexpensive | No model-driven tool selection |
-| **Bounded model tool selection (this phase)** | Demonstrates an LLM decision within enforceable constraints | Additional latency/cost; restricted tools and intent vocabulary; no autonomous planning |
+[`azure_model.py`](../src/support_agent/azure_model.py) supports Foundry project Responses API endpoints using the OpenAI SDK and legacy Azure OpenAI resource endpoints via LangChain. The user verified GPT-4.1 mini live calls in the local dashboard. See [Azure setup](azure-foundry.md).
 
-## Run the offline tests
-
-From repository root, with dependencies installed:
+## Verification
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe -m unittest tests.test_bounded_agent -v
+.\.venv\Scripts\python.exe -m src.support_agent.cli --evaluate
+.\.venv\Scripts\python.exe -m streamlit run dashboard.py
 ```
 
-The tests inject a `FakeModel` returning model-like JSON. They cover public FAQ, synthetic cross-account text, unauthenticated access, high-risk transfers, unexpected tools, extra arguments, malformed JSON, outages and unknown questions. **Fake-model tests do not prove live model compliance, adversarial robustness or production authorization.**
-
-## Optional Azure demonstration
-
-With your own Azure OpenAI configuration in `.env`, run:
-
-```powershell
-.\.venv\Scripts\python.exe -m src.support_agent.cli --agent --azure --message "What are your hours?"
-.\.venv\Scripts\python.exe -m src.support_agent.cli --agent --azure --principal user-001 --message "Show user-002 balance"
-```
-
-`--principal` is simulated identity, **not verified authentication**. Do not connect this demo to customer data. Live Azure calls can incur charges.
+Before the FAQ expansion, 53 automated tests and all ten baseline evaluation scenarios passed in the user's environment. Additional FAQ tests now require a fresh run.
 
 ## Production gaps
 
-Validate OIDC/JWT identity and tenant permissions at an external gateway and each adapter; use strict provider-native structured tool calling where supported; add trace redaction, cost and latency budgets, adversarial and integration evaluations, rate limiting, prompt-injection defenses, and human-review operations. This prototype's keyword policy can miss paraphrases and must not be treated as comprehensive security enforcement.
+Verified identity and downstream authorization, robust natural-language policy handling, rate limits, observability/redaction, cloud cost tracking, staffed escalation, adversarial evaluation and managed secrets remain unimplemented.
