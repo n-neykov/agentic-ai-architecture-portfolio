@@ -444,19 +444,27 @@ else:
             st.markdown("**Approval control:** bank-account details require explicit simulated reviewer approval; invalid records cannot be approved.")
             st.markdown("**Idempotency:** tenant + document content hash identifies repeat submissions within the current process.")
         with execute:
+            doc_mode = st.radio("Extraction mode", ["Deterministic offline", "AI-assisted · Azure Foundry"], horizontal=True, key="p2_mode")
             choice = st.selectbox("Document fixture", ["Custom document", *SAMPLES.keys()])
             sample = SAMPLES.get(choice, SAMPLES["Valid invoice"])
             tenant = st.selectbox("Simulated tenant", ["demo-tenant", "tenant-a", "tenant-b"])
             content = st.text_area("Synthetic text document", value=sample, height=200)
             if st.button("Process document", type="primary"):
                 try:
-                    st.session_state["doc_result"] = engine.process(content, tenant)
-                except ValueError as exc:
-                    st.error(str(exc))
+                    if doc_mode.startswith("AI-assisted"):
+                        from dotenv import load_dotenv
+                        from src.support_agent.structured_inference import configured_model
+                        load_dotenv()
+                        st.session_state["doc_result"] = engine.process(content, tenant, model=configured_model())
+                    else:
+                        st.session_state["doc_result"] = engine.process(content, tenant)
+                except (ValueError, RuntimeError, TimeoutError) as exc:
+                    st.error("Processing failed safely: " + str(exc))
             result = st.session_state.get("doc_result")
             if result:
                 st.subheader("Processing outcome")
                 st.metric("Status", result["status"].replace("_", " ").title())
+                st.caption("Execution mode: " + result.get("mode", "offline"))
                 st.caption("Workflow ID: " + result["workflow_id"] + (" · duplicate submission" if result["duplicate"] else ""))
                 left, right = st.columns(2)
                 with left:
@@ -519,13 +527,32 @@ else:
                            "required_role": t.required_role, "approval_required": t.requires_approval}
                           for t in TOOLS.values()], use_container_width=True, hide_index=True)
         with execute:
+            gov_mode = st.radio("Execution mode", ["Deterministic offline", "AI tool selection · Azure Foundry"], horizontal=True, key="p3_mode")
             principal_label = st.selectbox("Simulated principal", list(DEMO_PRINCIPALS))
             selected_principal = DEMO_PRINCIPALS[principal_label]
-            tool_name = st.selectbox("Requested tool", list(TOOLS))
+            if gov_mode.startswith("Deterministic"):
+                tool_name = st.selectbox("Requested tool", list(TOOLS))
+            else:
+                request_text = st.text_area("Natural-language tool request", value="Find the finance reporting procedure for my department.", height=100)
             requested_tenant = st.selectbox("Requested tenant", ["tenant-a", "tenant-b"])
             request_id = st.text_input("Request correlation ID", value="demo-request-001")
             if st.button("Execute governed tool request", type="primary"):
-                st.session_state["gov_result"] = gateway.execute(selected_principal, tool_name, requested_tenant, request_id)
+                if gov_mode.startswith("Deterministic"):
+                    st.session_state["gov_result"] = gateway.execute(selected_principal, tool_name, requested_tenant, request_id)
+                else:
+                    try:
+                        if not selected_principal.verified or requested_tenant != selected_principal.tenant:
+                            st.session_state["gov_result"] = gateway.execute_request(
+                                selected_principal, request_text, requested_tenant, request_id)
+                        else:
+                            from dotenv import load_dotenv
+                            from src.support_agent.structured_inference import configured_model
+                            load_dotenv()
+                            st.session_state["gov_result"] = gateway.execute_request(
+                                selected_principal, request_text, requested_tenant, request_id,
+                                model=configured_model())
+                    except (ValueError, RuntimeError, TimeoutError) as exc:
+                        st.error("Azure routing unavailable; no tool executed: " + str(exc))
             if st.button("Record simulated reviewer approval"):
                 ok = gateway.approve(request_id, selected_principal)
                 if ok:
@@ -537,6 +564,8 @@ else:
                 st.subheader("Policy decision")
                 st.metric("Outcome", result["status"].replace("_", " ").title())
                 st.write("**Reason:** " + result["reason"])
+                if "model_called" in result:
+                    st.caption("Model called: " + str(result["model_called"]))
                 st.json(result["records"])
                 st.download_button("Download decision evidence", json.dumps(result, indent=2),
                                    file_name="governance-decision.json", mime="application/json")
