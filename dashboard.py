@@ -251,7 +251,7 @@ with evaluation_tab:
 
 with architecture_tab:
     st.subheader("Policy-first architecture")
-    st.graphviz_chart("""
+    st.graphviz_chart(r"""
 digraph G {
   rankdir=TB; bgcolor="transparent";
   node [shape=box style="rounded,filled" fillcolor="#1d3046" color="#53718e" fontcolor="white" fontname="Arial"];
