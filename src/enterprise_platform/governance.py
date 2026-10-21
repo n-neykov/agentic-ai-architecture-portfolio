@@ -79,8 +79,13 @@ class GovernedGateway:
         """Optional model routing, never model authorization or arbitrary arguments."""
         # Reject unverified and cross-tenant requests before any model inference.
         if not principal.verified or requested_tenant != principal.tenant:
-            result = self.execute(principal, "preflight_request", requested_tenant, request_id)
-            result["model_called"] = False
+            reason = ("identity_not_verified" if not principal.verified
+                      else "cross_tenant_access")
+            result = {"status": "denied", "reason": reason,
+                      "tool": None, "records": [], "model_called": False}
+            self.audit.append({"event": "tool_decision", "request_id": request_id,
+                               "subject": principal.subject, "tenant": principal.tenant,
+                               "tool": None, "status": "denied", "reason": reason})
             return result
         if model is None:
             raise ValueError("Natural-language routing requires a model")
