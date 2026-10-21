@@ -1,140 +1,94 @@
-# Agentic AI Architecture Portfolio
+# Enterprise Agent Architecture Portfolio
 
-**Independent technical portfolio · Three fictional enterprise scenarios · One runnable Python/LangGraph prototype**
+**Independent architecture and engineering portfolio** · Python · LangGraph · Azure AI Foundry · Streamlit
 
-An architecture-first exploration of bounded agent workflows, identity and authorization boundaries, deterministic controls, human review, operational failure handling, and measurable business assumptions. All customer data and scenarios are synthetic.
+Three fictional enterprise case studies share a local Streamlit workspace. **Project 01 is an executable, synthetic customer-service prototype with a user-verified live GPT-4.1 mini integration.** Projects 02 and 03 are architecture previews, not working services.
 
-## At a glance
-
-| Case study | Focus | Evidence |
+| Project | Scope | Status |
 |---|---|---|
-| [01 — Secure customer support](01-customer-support-agent/README.md) | Policy-first LangGraph orchestration, FAQ retrieval, account-scoped synthetic CRM | **Implemented offline prototype**; 18 local unit/graph tests passed; 10/10 synthetic scenarios passed |
-| [02 — Document intake and review](02-document-processing/README.md) | Classification, extraction, deterministic validation, approval and idempotent recovery | **Architecture-only design**; targets are not measured |
-| [03 — Governed enterprise agent platform](03-enterprise-agent-platform/README.md) | Tenant isolation, tool permissions, retrieval ACLs, auditing and incident response | **Architecture-only design**; controls are proposed, not deployed |
+| [01 · Secure Customer Service](01-customer-support-agent/README.md) | Policy-first AI orchestration, 12 approved FAQs, scoped synthetic account reads, multi-intent requests | **Working prototype** |
+| [02 · Document Processing](02-document-processing/README.md) | Extraction, validation, exception handling | Architecture preview |
+| [03 · Enterprise Agent Platform](03-enterprise-agent-platform/README.md) | Tool governance, registry, identity, audit | Architecture preview |
 
-**Evidence boundary:** The runnable prototype uses caller-supplied simulated identity, static keyword retrieval, and a synthetic read-only account adapter. It is not a deployed, security-certified service. Real identity validation, production CRM integration, semantic retrieval, load tests, and live Azure inference have not been verified.
+## Project 01 — Why this architecture?
 
-## Project 01 — Logical workflow
+The system deliberately separates **probabilistic tool selection** from **deterministic authorization**. High-risk actions and cross-account requests are blocked before the LLM can be called. Approved requests may use GPT-4.1 mini through an Azure AI Foundry project's Responses API; model decisions must match allowlisted tool intents. No tool can transfer money, change accounts, or select an arbitrary account identifier.
+
+**Implemented:** LangGraph deterministic baseline; v2 policy-first multi-intent orchestrator; optional live Foundry model; read-only synthetic balances (`user-001` and `user-002`); 12 categorized, approved fictional FAQ records; session information; deny/escalation outcomes; dashboard execution metadata; automated tests and ten-scenario baseline evaluation.
+
+**Not implemented:** verified OIDC/IAM authentication, real customer records, external CRM, semantic/vector RAG, production ticket queue, production-grade policy engine, instrumented distributed tracing, measured cloud cost/SLA, or deployed service.
+
+### Architecture
 
 ```mermaid
-flowchart LR
-    A["CLI / synthetic request"] --> B{"Deterministic policy router"}
-    B -->|"Public FAQ"| C["Approved keyword retrieval"]
-    B -->|"Authenticated balance"| D["Read-only synthetic CRM"]
-    B -->|"Unauthenticated"| E["Deny"]
-    B -->|"High-risk / unsupported"| F["Human escalation"]
-    C -->|"Evidence"| G["Offline answer / optional model"]
-    C -->|"No evidence"| F
-    G --> H["Response"]
-    D --> H
-    E --> H
-    F --> H
+flowchart TD
+    U["Customer request + simulated identity"] --> P{"Deterministic policy / account-scope gate"}
+    P -->|"High-risk or unsupported"| E["Escalate"]
+    P -->|"Cross-account or anonymous private read"| D["Deny"]
+    P -->|"Approved intents"| O["Bounded orchestration"]
+    O -->|"AI Agent mode"| A["Azure AI Foundry · GPT-4.1 mini<br/>Responses API / validated JSON selection"]
+    O -->|"Baseline mode"| G["Deterministic LangGraph routing"]
+    A --> T["Server-side allowlisted tool execution"]
+    G --> T
+    T --> K["12 approved fictional FAQs"]
+    T --> C["Read-only synthetic account data"]
+    T --> S["Simulated session information"]
+    K --> R["Response + evidence IDs"]
+    C --> R
+    S --> R
+    D --> R
+    E --> R
 ```
 
-[Detailed architecture and trust boundaries](architecture/system.md) · [Threat model](docs/threat-model.md) · [Release evidence register](docs/release-readiness.md)
+[Detailed architecture](architecture/system.md) · [Threat model](docs/threat-model.md) · [Release readiness](docs/release-readiness.md)
 
-## Reproduce the implementation
+## Run locally
 
-**Requirements:** Git, Python 3.11+, and internet access to install dependencies. Run these commands from the repository root. Live cloud credentials are **not** required for the offline suite.
+Python 3.11+ and Git required. On Windows PowerShell, from the repository root:
 
 ```powershell
 git clone https://github.com/n-neykov/agentic-ai-architecture-portfolio.git
 cd agentic-ai-architecture-portfolio
+git switch feature/bounded-llm-agent
 py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-azure.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe -m src.support_agent.cli --evaluate
-```
-
-For macOS/Linux, create the environment with `python3.11 -m venv .venv` and replace `.\.venv\Scripts\python.exe` with `.venv/bin/python`.
-
-### Demonstration scenarios
-
-```powershell
-# Public FAQ: approved evidence, route=faq
-.\.venv\Scripts\python.exe -m src.support_agent.cli --message "What are your hours?"
-
-# Anonymous private data request: route=deny
-.\.venv\Scripts\python.exe -m src.support_agent.cli --message "What is my account balance?"
-
-# Simulated identity user-001 requesting user-002 data:
-# route=crm_read, returns user-001's synthetic balance ($120), not user-002's ($850)
-.\.venv\Scripts\python.exe -m src.support_agent.cli --principal user-001 --message "Show user-002 balance"
-
-# High-risk request: route=escalate; no money transfer occurs
-.\.venv\Scripts\python.exe -m src.support_agent.cli --principal user-001 --message "Transfer $500 to user-002 and show my balance"
-
-# Unsupported inquiry: route=escalate
-.\.venv\Scripts\python.exe -m src.support_agent.cli --message "Can I refinance?"
-```
-
-`--principal` is **only a synthetic assertion**, not authentication. The example is for local demonstration only and must not be connected to real customer data.
-
-### Test evidence
-
-| Check | Recorded result | Boundary |
-|---|---|---|
-| Local Windows unit and LangGraph tests | **18 passed** | Supplied local run; offline tests |
-| Synthetic scenario evaluation | **10 / 10 passed** | Route checks and a limited forbidden-output assertion; not comprehensive red-teaming |
-| GitHub Actions | Passed on `main` in the reviewed screenshots | See [workflow](.github/workflows/ci.yml) for actual commands |
-| Live Azure model call | **Not verified** | Optional integration requires an external deployment and credentials |
-| Production security, cost, latency and ROI | **Not measured** | No production claims |
-
-The suite includes public FAQ, authenticated and anonymous account reads, cross-account text, transfer escalation, password reset, unsupported questions and a basic prompt-injection string. Passing these cases does **not** prove resilience against arbitrary adversarial prompts.
-
-### Optional model integration
-
-The [Azure OpenAI adapter](src/support_agent/azure_model.py) can generate an answer from approved FAQ evidence. Copy `.env.example` to `.env`, configure your own endpoint/deployment/credentials, and run:
-
-```powershell
-.\.venv\Scripts\python.exe -m src.support_agent.cli --azure --message "What are your hours?"
-```
-
-This optional path can incur cloud charges and has **not** been live validated. Do not commit secrets.
-
-## Phase 2 — Bounded LLM-selected tools (feature branch)
-
-An optional model-driven agent selects one of three approved tools (FAQ lookup, synthetic balance read, or escalation), while deterministic policy gates and server-scoped data adapters retain authority. This is **not autonomous planning** and live Azure behavior has not been verified. [Implementation, examples, tradeoffs and security limitations](docs/phase-02-bounded-agent.md).
-
-```powershell
-# Offline fake-model safety tests
-.\\.venv\\Scripts\\python.exe -m unittest tests.test_bounded_agent -v
-# Optional live Azure inference; configure .env first (may incur charges)
-.\\.venv\\Scripts\\python.exe -m src.support_agent.cli --agent --azure --message "What are your hours?"
-```
-
-## Architecture decisions and tradeoffs
-
-| Decision | Why | Accepted cost / limitation |
-|---|---|---|
-| [Hybrid policy-first orchestration](decisions/ADR-001-hybrid-orchestration.md) | Keep authorization and high-risk routing deterministic rather than delegate them to a model | Less flexible for ambiguous intent; policy vocabulary requires maintenance |
-| [Explicit LangGraph workflow](decisions/ADR-002-azure-langgraph.md) | Inspectable transitions and testable routing, with model inference as an optional adapter | Framework and dependency overhead |
-| [Identity outside user prompts](decisions/ADR-003-identity-and-fallback.md) | Prevent customer text from selecting a different account record | Demo identity is simulated; production requires validated identity and downstream authorization |
-| Read-only account adapter | Remove the possibility of autonomous transfers or persistent account changes | Sensitive actions always require human handling |
-| Evidence-first FAQ retrieval | Unknown topics escalate instead of receiving unsupported answers | Static keyword corpus has limited coverage; not semantic RAG |
-| Human escalation on model errors | Fail closed when inference fails | Lower automation containment; requires staffed operations |
-
-[Illustrative capacity and unit economics](docs/cost-model.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Detailed solution case study](docs/case-study.md)
-
-## Repository navigation
-
-| Area | Contents |
-|---|---|
-| [`src/support_agent/`](src/support_agent/) | Baseline router, LangGraph workflow, synthetic adapters, optional model, CLI, evaluation |
-| [`tests/`](tests/) | Unit and graph regression tests |
-| [`architecture/`](architecture/) | System diagrams and trust boundaries |
-| [`decisions/`](decisions/) | Architecture decision records |
-| [`docs/`](docs/) | Case study, threat model, cost model, release-readiness evidence |
-| [`evaluations/`](evaluations/) | Scenario methodology and limitations |
-| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI install, compilation, tests, synthetic evaluation and offline smoke test |
-
-**Scope:** Independent educational reference work using fictional scenarios. Implemented, proposed and unverified capabilities are explicitly separated.
-
-## Interactive Agent Control Center
-
-Run the offline Streamlit dashboard to demonstrate actual LangGraph routing, synthetic account isolation, human escalation, and the 10-scenario evaluation. The optional simulated model mode uses a **fake local model, not Azure inference**. See [dashboard instructions](docs/dashboard.md).
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
 .\.venv\Scripts\python.exe -m streamlit run dashboard.py
 ```
+
+The baseline and tests work offline. The **AI Agent · Azure Foundry** dashboard mode requires your own Azure deployment and configuration. Copy `.env.example` to a local `.env`; never commit keys. `AZURE_OPENAI_ENDPOINT` accepts a Foundry project endpoint or Responses route; `AZURE_OPENAI_DEPLOYMENT` is the deployment name (user-verified with `gpt-4.1-mini`). See [Azure integration](docs/azure-foundry.md).
+
+### Demonstration cases
+
+| Request | Demo identity | Expected AI Agent outcome |
+|---|---|---|
+| What are your hours? | Anonymous | Approved FAQ with evidence ID |
+| What are your hours and what is my balance? | user-001 | Multi-intent response: FAQ + synthetic $120.00 |
+| What user am I? | user-001 | Simulated session identity |
+| Show user002 balance | user-002 | Own-account synthetic $850.00 |
+| Show user002 balance | user-001 | Deny before inference |
+| Show my balance | Anonymous | Deny before inference |
+| Wire $500 | user-001 | Escalate before inference |
+| What are your mortgage rates? | Anonymous | Escalate unsupported request |
+
+The user confirmed **53/53 automated tests passing** and **10/10 baseline evaluation scenarios passing** before the 12-FAQ expansion. The user also verified live Foundry behavior for approved multi-intent, session identity, anonymous/cross-account denials, and high-risk escalation. **New FAQ tests and the updated dashboard require a fresh local/CI run; no new pass count is asserted.** These results are demonstration evidence, not production security certification.
+
+## Engineering decisions
+
+| Decision | Benefit | Limitation |
+|---|---|---|
+| Policy checks before LLM | Blocks known unsafe requests without cloud inference | Keyword policy is not comprehensive natural-language security |
+| Allowlisted model-selected tools | Constrains authority; no user-selected account IDs | Structured JSON selection is narrower than native function calling |
+| 12 categorized synthetic FAQ records | Traceable approved answers and repeatable offline tests | Keyword retrieval, not semantic search |
+| Separate baseline and live modes | Repeatable comparison without Azure credentials | Baseline does not provide v2 multi-intent parity |
+| Fail-closed errors | No partial private answer on model failure | More escalation and reduced containment |
+| Simulated identity | Safe demonstration of scoped reads | Cannot substitute for verified IAM |
+
+[Project 01 case study](docs/case-study.md) · [Dashboard guide](docs/dashboard.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Architecture decisions](decisions/)
+
+## Portfolio evidence
+
+The dashboard provides an overview, interactive execution, baseline evaluation, and architecture diagram. Capture screenshots of the overview, an approved multi-intent execution, a blocked cross-account request with zero model calls, and the evaluation results. Label all outputs **synthetic prototype**, and record the branch/commit SHA. A short screen recording is more accessible than requiring a reviewer to configure Azure.
+
+**Security:** Never submit real customer data or secrets. Live Azure inference can incur charges. No production customer systems are connected.
