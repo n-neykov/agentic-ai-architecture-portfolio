@@ -87,7 +87,7 @@ The user confirmed **93/93 automated tests passing** before the final Azure extr
 | Fail-closed errors | No partial private answer on model failure | More escalation and reduced containment |
 | Simulated identity | Safe demonstration of scoped reads | Cannot substitute for verified IAM |
 
-[Project 01 case study](docs/case-study.md) · [Dashboard guide](docs/dashboard.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Architecture decisions](decisions/)
+[Final technical review](docs/final-technical-review.md) · [Project 01 case study](docs/case-study.md) · [Dashboard guide](docs/dashboard.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Architecture decisions](decisions/)
 
 ## Portfolio evidence
 
