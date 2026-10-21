@@ -35,7 +35,7 @@ Project 02 provides **Overview**, **Document execution**, and **Architecture**, 
 
 Project 03 provides **Overview**, **Governed tool execution**, and **Architecture**, including **Deterministic offline** and **AI tool selection · Azure Foundry** routing. Demonstrate role and cross-tenant denials, approval-required writes, and structured audit evidence. Verification flags and approvals are simulated.
 
-Architecture views use consistent responsive stages and distinct permitted/blocked outcomes instead of horizontally compressed Graphviz diagrams.
+Architecture views use consistent responsive stages and distinct permitted/blocked outcomes. Branching Mermaid diagrams in the project READMEs and Project 01 architecture documentation show the explicit decision logic.
 
 ## Screenshot walkthrough
 
