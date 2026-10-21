@@ -1,6 +1,6 @@
 """Synthetic supplier-document intake, validation, review and idempotent staging.
 
-No OCR, real ERP, persistent queue, external files or Azure services are used.
+Optional Azure inference is supported. No OCR, real ERP, persistent queue or external files are used.
 """
 from dataclasses import dataclass, asdict
 from hashlib import sha256
