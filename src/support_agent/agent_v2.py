@@ -11,7 +11,6 @@ from .bounded_agent import choose_tool, ESCALATION
 
 IDENTITY = re.compile(r"\b(who am i|what user am i|my (?:user|account) id|which user am i)\b", re.I)
 BALANCE = re.compile(r"\b(balance|account amount)\b", re.I)
-PUBLIC = re.compile(r"\b(hours?|open|fees?|charges?|cards?|replace(?:ment)?)\b", re.I)
 
 
 def plan(message: str, context: TrustedContext) -> dict:
@@ -30,7 +29,7 @@ def plan(message: str, context: TrustedContext) -> dict:
         if not context.authenticated or not context.principal_id:
             return {"policy": "deny", "intents": [], "reason": "private read without demo identity"}
         intents.append("account_balance")
-    if PUBLIC.search(message):
+    if retrieve_approved(message):
         intents.append("faq_lookup")
     if not intents:
         return {"policy": "escalate", "intents": [], "reason": "unsupported intent"}
@@ -58,7 +57,7 @@ def run_v2(message: str, context: TrustedContext, model=None) -> dict:
                 # Model chooses from existing bounded allowlist, but it cannot
                 # override the policy's intended tool or choose tool arguments.
                 tool = choose_tool(model, message if len(decision["intents"]) == 1 else
-                                   ("What are your hours or fees?" if intent == "faq_lookup"
+                                   ("What are your hours?" if intent == "faq_lookup"
                                     else "What is my balance?"))
             except Exception:
                 return {"route": "escalate", "selected_tool": None, "response": ESCALATION,
