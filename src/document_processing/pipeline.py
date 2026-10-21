@@ -116,7 +116,6 @@ class IntakeEngine:
                             ], False))
                 result["duplicate"] = False
                 result["mode"] = "azure"
-                self._results[workflow_id] = result
                 return dict(result)
         issues = validate(kind, fields)
         status = "needs_review" if issues else "staged"
