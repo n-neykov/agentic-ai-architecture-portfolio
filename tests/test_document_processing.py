@@ -32,6 +32,15 @@ class DocumentPipelineTests(unittest.TestCase):
         self.assertEqual(self.engine.staged_count(), 0)
         self.assertEqual(self.engine.approve(r["workflow_id"], "reviewer")["status"], "staged")
 
+    def test_malformed_bank_details_cannot_bypass_review(self):
+        text = "Supplier Agreement\\nVendor ID: VEN-002\\nEffective Date: 2026-11-01\\nBank Account: invalid value!"
+        result = self.engine.process(text)
+        self.assertEqual(result["status"], "needs_review")
+        self.assertIn("invalid_bank_account_format", result["issues"])
+        with self.assertRaises(ValueError):
+            self.engine.approve(result["workflow_id"], "reviewer")
+        self.assertEqual(self.engine.staged_count(), 0)
+
     def test_cross_tenant_approval_denied(self):
         r = self.engine.process(SAMPLES["Agreement requiring review"], "tenant-a")
         with self.assertRaises(PermissionError):
