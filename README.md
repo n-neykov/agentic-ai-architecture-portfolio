@@ -40,7 +40,7 @@ flowchart TD
     E --> R
 ```
 
-[Detailed architecture](architecture/system.md) · [Threat model](docs/threat-model.md) · [Release readiness](docs/release-readiness.md)
+[Knowledge catalog](docs/knowledge-base.md) · [Detailed architecture](architecture/system.md) · [Threat model](docs/threat-model.md) · [Release readiness](docs/release-readiness.md)
 
 ## Run locally
 
@@ -57,7 +57,7 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m streamlit run dashboard.py
 ```
 
-The baseline and tests work offline. The **AI Agent · Azure Foundry** dashboard mode requires your own Azure deployment and configuration. Copy `.env.example` to a local `.env`; never commit keys. `AZURE_OPENAI_ENDPOINT` accepts a Foundry project endpoint or Responses route; `AZURE_OPENAI_DEPLOYMENT` is the deployment name (user-verified with `gpt-4.1-mini`). See [Azure integration](docs/azure-foundry.md).
+For the v2 agent in the terminal, run `python -m src.support_agent.cli --v2 --message "What are your hours?"` (offline) or add `--azure` for live inference.\n\nThe baseline and tests work offline. The **AI Agent · Azure Foundry** dashboard mode requires your own Azure deployment and configuration. Copy `.env.example` to a local `.env`; never commit keys. `AZURE_OPENAI_ENDPOINT` accepts a Foundry project endpoint or Responses route; `AZURE_OPENAI_DEPLOYMENT` is the deployment name (user-verified with `gpt-4.1-mini`). See [Azure integration](docs/azure-foundry.md).
 
 ### Demonstration cases
 
