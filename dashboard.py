@@ -427,10 +427,10 @@ else:
         st.markdown("""<div class="hero"><div class="eyebrow">PROJECT 02 / DOCUMENT INTELLIGENCE</div>
         <h1>Intelligent Document Processing</h1>
         <p>Deterministic supplier intake, field-level evidence, validation, human-review gates and idempotent staging.</p>
-        <div class="portfolio-meta"><span class="portfolio-chip">FUNCTIONAL OFFLINE PROTOTYPE</span>
+        <div class="portfolio-meta"><span class="portfolio-chip">SYNTHETIC PROTOTYPE</span>
         <span class="portfolio-chip">SYNTHETIC DOCUMENTS</span>
         <span class="portfolio-chip">REVIEW GATES</span></div></div>""", unsafe_allow_html=True)
-        st.caption("Local text-only fixtures. No OCR, Azure Document Intelligence, live ERP, external queue or real supplier records.")
+        st.caption("Synthetic text fixtures with optional Azure GPT-4.1 mini extraction. No OCR, Azure Document Intelligence, live ERP, external queue or real supplier records.")
         if "doc_engine" not in st.session_state:
             st.session_state["doc_engine"] = IntakeEngine()
         engine = st.session_state["doc_engine"]
@@ -595,4 +595,4 @@ else:
             architecture_stage("04", "Auditable policy decisions", "In-memory events record request ID, subject, tenant, tool, decision and reason; exportable as JSON.", "success")
             st.markdown("**Production gaps:** verified OIDC/JWT, managed identities, centralized policy service, real agent runtime, durable approvals, redacted telemetry and deployed Azure services.")
     st.divider()
-    st.caption("Independent enterprise AI portfolio · Functional synthetic offline prototype · Not production deployed")
+    st.caption("Independent enterprise AI portfolio · Synthetic prototype · Optional Azure inference · Not production deployed")
