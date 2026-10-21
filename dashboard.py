@@ -450,6 +450,7 @@ else:
             tenant = st.selectbox("Simulated tenant", ["demo-tenant", "tenant-a", "tenant-b"])
             content = st.text_area("Synthetic text document", value=sample, height=200)
             if st.button("Process document", type="primary"):
+                st.session_state.pop("doc_result", None)
                 try:
                     if doc_mode.startswith("AI-assisted"):
                         from dotenv import load_dotenv
@@ -492,7 +493,7 @@ else:
                                  "A staged document must pass explicit field and vendor rules. Sensitive bank details require simulated review.")
             architecture_stage("01", "Synthetic text intake", "Select a sample or provide plain text; tenant ID and content hash establish in-memory idempotency.")
             architecture_connector()
-            architecture_stage("02", "Classification + field extraction", "Recognize invoice, tax form or supplier agreement and record source-line provenance for each extracted field.")
+            architecture_stage("02", "Classification + field extraction", "Offline extraction or Azure GPT-4.1 mini proposes document type and fields; Python verifies exact source-line evidence before staging.")
             architecture_connector()
             architecture_stage("03", "Deterministic validation", "Check required fields, synthetic vendor registry, amounts, currency and dates. Bank-account details trigger review.", "warning")
             st.markdown('<div class="arch-section-label">POLICY DECISION / TWO DISTINCT OUTCOMES</div>', unsafe_allow_html=True)
@@ -537,6 +538,7 @@ else:
             requested_tenant = st.selectbox("Requested tenant", ["tenant-a", "tenant-b"])
             request_id = st.text_input("Request correlation ID", value="demo-request-001")
             if st.button("Execute governed tool request", type="primary"):
+                st.session_state.pop("gov_result", None)
                 if gov_mode.startswith("Deterministic"):
                     st.session_state["gov_result"] = gateway.execute(selected_principal, tool_name, requested_tenant, request_id)
                 else:
@@ -581,7 +583,7 @@ else:
             architecture_connector("default-deny enforcement")
             architecture_stage("02", "Tenant + role policy", "Reject unverified callers, cross-tenant requests and missing role permissions before data access.", "warning")
             architecture_connector()
-            architecture_stage("03", "Allowlisted tool registry", f"{len(TOOLS)} registered capabilities spanning HR, finance and IT, including a payment-write approval example.")
+            architecture_stage("03", "Allowlisted tool registry", f"Offline direct tool choice or optional GPT-4.1 mini routing across {len(TOOLS)} registered capabilities. Tenant, role and approval decisions stay in Python.")
             architecture_connector("approval and action boundary")
             st.markdown('<div class="arch-section-label">POLICY DECISION / CONTROLLED OUTCOMES</div>', unsafe_allow_html=True)
             allowed, denied = st.columns(2, gap="medium")
