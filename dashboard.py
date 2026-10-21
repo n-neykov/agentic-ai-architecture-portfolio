@@ -191,7 +191,8 @@ with execution_tab:
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 "request": message, "simulated_principal": principal, "engine": engine,
                 "policy": policy, "result": result, "duration_ms": elapsed,
-                "real_llm_calls": attempted, "real_model_used": completed > 0,\n                "model_calls_completed": completed, "model_status": status,
+                "real_llm_calls": attempted, "real_model_used": completed > 0,
+                "model_calls_completed": completed, "model_status": status,
             }
         st.caption("Live mode sends eligible request text to Microsoft Foundry and may incur charges. Other modes run offline. Never enter secrets or real customer data.")
     with right:
@@ -250,7 +251,10 @@ with execution_tab:
                 "engine": execution["engine"], "simulated_principal": execution["simulated_principal"],
                 "policy_classification": execution["policy"], "selected_tool": result.get("selected_tool"),
                 "evidence_ids": result.get("evidence_ids", []), "route": route,
-                "real_model_used": execution["real_model_used"],\n                "real_llm_calls": execution["real_llm_calls"],\n                "model_calls_completed": execution["model_calls_completed"],\n                "model_status": execution["model_status"],
+                "real_model_used": execution["real_model_used"],
+                "real_llm_calls": execution["real_llm_calls"],
+                "model_calls_completed": execution["model_calls_completed"],
+                "model_status": execution["model_status"],
             })
             st.download_button("Download execution evidence", json.dumps(execution, indent=2),
                                file_name="agent-execution-synthetic.json", mime="application/json")
