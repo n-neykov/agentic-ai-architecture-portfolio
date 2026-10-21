@@ -89,20 +89,35 @@ class IntakeEngine:
         self._results = {}
         self._staging = {}
 
-    def process(self, text: str, tenant_id: str = "demo-tenant") -> dict:
+    def process(self, text: str, tenant_id: str = "demo-tenant", model=None) -> dict:
         if not isinstance(text, str) or not text.strip():
             raise ValueError("A nonempty synthetic document is required")
         if len(text.encode("utf-8")) > MAX_BYTES:
             raise ValueError("Document exceeds demo size limit")
         if not re.fullmatch(r"[a-z][a-z0-9-]{1,63}", tenant_id):
             raise ValueError("Invalid tenant identifier")
-        workflow_id = sha256((tenant_id + "\0" + text).encode()).hexdigest()[:16]
+        workflow_id = sha256((tenant_id + "\0" + ("azure" if model is not None else "offline") + "\0" + text).encode()).hexdigest()[:16]
         if workflow_id in self._results:
             result = dict(self._results[workflow_id])
             result["duplicate"] = True
             return result
-        kind = classify(text)
-        fields, evidence = extract(text)
+        if model is None:
+            kind = classify(text)
+            fields, evidence = extract(text)
+        else:
+            from .azure_extraction import infer_document
+            try:
+                kind, fields, evidence = infer_document(text, model)
+            except (ValueError, RuntimeError, TimeoutError) as exc:
+                result = asdict(IntakeResult(workflow_id, "unknown", "needs_review", {}, {},
+                            ["model_inference_failed"], [
+                                {"event": "received", "workflow_id": workflow_id, "tenant": tenant_id},
+                                {"event": "model_failed_closed", "error_type": type(exc).__name__}
+                            ], False))
+                result["duplicate"] = False
+                result["mode"] = "azure"
+                self._results[workflow_id] = result
+                return dict(result)
         issues = validate(kind, fields)
         status = "needs_review" if issues else "staged"
         audit = [
@@ -115,6 +130,7 @@ class IntakeEngine:
             audit.append({"event": "staged", "target": "synthetic_in_memory_outbox"})
         result = asdict(IntakeResult(workflow_id, kind, status, fields, evidence, issues, audit, status == "staged"))
         result["duplicate"] = False
+        result["mode"] = "azure" if model is not None else "offline"
         self._results[workflow_id] = result
         return dict(result)
 
