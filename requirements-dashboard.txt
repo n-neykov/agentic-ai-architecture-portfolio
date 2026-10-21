@@ -1,0 +1,2 @@
+-r requirements-azure.txt
+streamlit>=1.35,<2
