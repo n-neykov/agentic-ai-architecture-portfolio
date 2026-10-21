@@ -17,18 +17,29 @@ from src.support_agent.core import TrustedContext
 from src.support_agent.evaluation import evaluate
 from src.support_agent.workflow import classify, run
 
-st.set_page_config(page_title="Enterprise Agent Architecture Lab | Portfolio", page_icon="🛡️", layout="wide",
+st.set_page_config(page_title="Agent Control Center | Enterprise AI Portfolio", page_icon="◈", layout="wide",
                    initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
-.block-container {max-width: 1450px; padding-top: 1.8rem; padding-bottom: 3rem}
+.block-container {max-width: 1320px; padding-top: 2.3rem; padding-bottom: 3rem}
+[data-testid="stSidebar"] {background: #111923}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {line-height: 1.45}
+[data-testid="stTabs"] [data-baseweb="tab"] {font-weight: 600; padding: 13px 18px}
+[data-testid="stTabs"] [aria-selected="true"] {color: #7dd3fc}
+h2, h3 {letter-spacing: -.025em}
+div[data-testid="stAlert"] {border-radius: 10px}
+.portfolio-meta {display:flex; gap:9px; flex-wrap:wrap; margin-top:18px}
+.portfolio-chip {border:1px solid #36526b; border-radius:6px; padding:6px 10px; color:#bcd3e6; font-size:.77rem; font-weight:600}
+.portfolio-section {font-size:.72rem; font-weight:700; letter-spacing:.14em; color:#86a8c5; margin:8px 0 15px}
+.portfolio-note {font-size:.82rem; color:#91a6ba; margin-top:12px}
+.portfolio-divider {border-top:1px solid #27394b; margin:22px 0}
 [data-testid="stMetric"] {background: #17212f; border: 1px solid #2d3b4e; border-radius: 12px; padding: 16px}
 [data-testid="stMetricLabel"] {color: #b7c5d8}
-.hero {padding: 25px 28px; background: linear-gradient(115deg,#14283b,#172133 68%,#263247);
+.hero {padding: 34px 38px; background: linear-gradient(115deg,#12263a,#15283b 68%,#20354b);
        border:1px solid #33465b; border-radius:16px; margin-bottom: 14px}
 .eyebrow {font-size:.72rem; letter-spacing:.16em; color:#87d6e6; font-weight:700}
-.hero h1 {margin:6px 0 5px; font-size:2.15rem; color:#f5f8fc}
+.hero h1 {margin:6px 0 5px; font-size:2.5rem; letter-spacing:-.04em; color:#f5f8fc}
 .hero p {color:#b6c9d9; margin:0}
 .step {padding:14px 16px; border:1px solid #344356; background:#182333;
        border-radius:12px; margin:5px 0; min-height:85px}
@@ -104,63 +115,75 @@ class DemoDecisionModel:
         return SimpleNamespace(content=json.dumps({"tool": tool}))
 
 with st.sidebar:
-    st.markdown("### 🛡️ Enterprise Agent Architecture Lab")
+    st.markdown("### ◈ Agent Architecture Lab")
     project = st.selectbox("Project workspace", [
         "01 · Secure Customer Service",
         "02 · Intelligent Document Processing",
         "03 · Enterprise Agent Platform",
     ], key="portfolio_project")
-    st.caption("01 · WORKING PROTOTYPE  |  02–03 · ARCHITECTURE PREVIEWS")
+    st.caption("Enterprise AI engineering portfolio")
     st.divider()
     if project.startswith("01"):
-        st.markdown("**Execution configuration**")
-        mode = st.radio("Decision engine", ["LangGraph · deterministic", "Bounded agent · simulated selection", "GPT-4.1 mini · Live Foundry", "Agent v2 · Live Foundry"],
+        st.markdown("**Runtime configuration**")
+        mode = st.radio("Decision engine", ["LangGraph · deterministic", "Bounded agent · simulated selection", "GPT-4.1 mini · Live Foundry", "Agent v2 · Live Foundry"], index=3,
                         help="Live Foundry sends eligible requests to Azure. Other modes are offline.")
         principal = st.selectbox("Simulated identity", ["Anonymous", "user-001", "user-002"],
                                  help="Caller-provided demonstration context; NOT verified authentication.")
         st.divider()
-        st.markdown("**Runtime indicators**")
-        st.success("● Local policy backend available")
-        if "Live Foundry" in mode:
-            st.warning("● Live Foundry selected · API calls may incur charges")
-            st.caption("Live inference is attempted only for policy-permitted requests. Check execution metadata for completed calls.")
-        else:
-            st.info("● Offline mode · No real model inference")
-        st.caption("No production CRM, verified IAM, or transfer capability.")
+        st.markdown("**Environment**")
+        st.caption("● Policy engine · Local")
+        st.caption("● Inference · " + ("Microsoft Foundry (on execution)" if "Live Foundry" in mode else "Offline"))
+        st.caption("● Data · Synthetic, read-only")
         st.divider()
-        st.caption("Evidence labels are intentionally conservative: synthetic fixtures, local evaluations, and summarized execution states.")
+        st.caption("Independent portfolio · No production data")
 
 if project.startswith("01"):
-    st.markdown("""<div class="hero"><div class="eyebrow">SECURE AGENT ORCHESTRATION · PROJECT 01</div>
-    <h1>Agent Control Center</h1>
-    <p>Explore bounded tool decisions, deterministic policy gates, account-scoped synthetic data, and safe escalation.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="hero">
+    <div class="eyebrow">PROJECT 01 / SECURE AGENT ORCHESTRATION</div>
+    <h1>Customer Service Agent</h1>
+    <p>Policy-governed AI orchestration with Azure AI Foundry, LangGraph, and scoped tool execution.</p>
+    <div class="portfolio-meta">
+      <span class="portfolio-chip">FUNCTIONAL PROTOTYPE</span>
+      <span class="portfolio-chip">GPT-4.1 mini</span>
+      <span class="portfolio-chip">READ-ONLY TOOLS</span>
+      <span class="portfolio-chip">SYNTHETIC DATA</span>
+    </div></div>""", unsafe_allow_html=True)
 
-    st.warning("SYNTHETIC DEMO · Identity is simulated; balances are fictional; live Foundry mode may call an external LLM. Never enter real customer data or secrets.")
+    st.caption("Demonstration environment · Simulated identity and fictional account data · Do not enter real customer information.")
 
     overview, execution_tab, evaluation_tab, architecture_tab = st.tabs(
-        ["Overview", "Interactive execution", "Evaluation & evidence", "Architecture & limitations"])
+        ["Overview", "Live execution", "Evaluation", "Architecture"])
 
     with overview:
-        st.subheader("Operational overview")
+        st.markdown('<div class="portfolio-section">SYSTEM AT A GLANCE</div>', unsafe_allow_html=True)
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Available demo scenarios", len(SCENARIOS))
-        m2.metric("Model calls attempted (last run)", st.session_state.get("execution", {}).get("real_llm_calls", 0))
-        m3.metric("Write-enabled tools", 0)
-        m4.metric("External CRM connections", 0)
-        st.markdown("#### What this prototype demonstrates")
-        a, b, c = st.columns(3)
+        m1.metric("AI model", "GPT-4.1 mini")
+        m2.metric("Tool permissions", "Read-only")
+        m3.metric("Knowledge sources", "3 approved FAQs")
+        m4.metric("Evaluation suite", "10 scenarios")
+        st.caption("Model is invoked only when live mode is selected and a permitted request is executed. Evaluation counts describe available checks, not live performance.")
+        st.markdown('<div class="portfolio-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="portfolio-section">ARCHITECTURAL CONTROLS</div>', unsafe_allow_html=True)
+        a, b, c = st.columns(3, gap="medium")
         with a:
-            panel("01 · CONTROL PLANE", "Deterministic policy gate",
-                  "High-risk actions and unauthenticated private reads are handled before model selection.", "pass")
+            panel("01 / POLICY ENFORCEMENT", "Deterministic authorization",
+                  "Risk screening and account-scope checks run before any LLM call.", "pass")
         with b:
-            panel("02 · EXECUTION", "Bounded routing",
-                  "LangGraph routes requests; optional fake model or live Foundry model proposes allowlisted tool decisions.", "neutral")
+            panel("02 / AGENT EXECUTION", "Bounded orchestration",
+                  "Approved FAQ, balance, and session tools; multi-intent execution in v2.", "neutral")
         with c:
-            panel("03 · DATA PLANE", "Scoped synthetic adapters",
-                  "Account reads use the simulated principal, never a customer ID extracted from the request.", "pass")
-        st.markdown("#### Suggested interview walkthrough")
-        st.write("Start with a public FAQ, demonstrate the cross-account attempt, then show a high-risk transfer escalation. "
-                 "Open the execution details and evaluation tab to discuss trust boundaries and limitations.")
+            panel("03 / SAFE OUTCOMES", "Fail-closed behavior",
+                  "Unauthorized, unsupported, or high-risk requests are denied or escalated.", "pass")
+        st.markdown('<div class="portfolio-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="portfolio-section">VALIDATED CAPABILITIES</div>', unsafe_allow_html=True)
+        left_cap, right_cap = st.columns(2, gap="large")
+        with left_cap:
+            st.markdown("**Customer assistance**")
+            st.markdown("✓ Approved knowledge retrieval  \\n✓ Scoped synthetic balance lookup  \\n✓ Multi-intent requests")
+        with right_cap:
+            st.markdown("**Governance & assurance**")
+            st.markdown("✓ Cross-account request blocking  \\n✓ Pre-inference high-risk screening  \\n✓ Execution metadata and reproducible tests")
+        st.caption("Scope: working synthetic prototype. Identity is not externally verified; no production CRM, transactions, or staffed escalation integration.")
 
     with execution_tab:
         st.subheader("Run a customer-support request")
