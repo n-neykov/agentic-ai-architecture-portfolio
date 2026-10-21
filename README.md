@@ -8,11 +8,33 @@ A **hybrid, policy-first** support-agent prototype: deterministic high-risk rout
 
 > **Evidence boundary:** This is an educational, synthetic prototype—not a real client system, a deployed production platform, or a security-certified product. OIDC identity provider, external CRM authorization, Azure AI Search, observability, real Azure inference, and business KPIs are **not verified or implemented** unless stated otherwise.
 
+### Logical architecture
+
+The implemented reference workflow separates policy routing, account-scoped data access, approved FAQ retrieval, and optional language generation.
+
+```mermaid
+flowchart TD
+    A["Customer / CLI demo"] --> B["Application trust boundary"]
+    B --> C{"LangGraph policy router"}
+    C -->|"Public FAQ"| D["Approved keyword retrieval"]
+    D -->|"Evidence found"| E["Offline answer or optional Azure OpenAI"]
+    D -->|"No evidence"| H["Human escalation"]
+    C -->|"Authenticated balance request"| F["Read-only synthetic CRM"]
+    C -->|"Unauthenticated account request"| G["Deny"]
+    C -->|"High-risk or unsupported"| H
+    E --> I["Response"]
+    F --> I
+    G --> I
+    H --> I
+```
+
+See the [complete logical architecture and trust-boundary analysis](architecture/system.md).
+
 ## Portfolio case studies
 
 | Case study | Deliverable | Implementation status |
 |---|---|---|
-| [01 — Customer Support Agent](docs/case-study.md) | Hybrid architecture, Python + LangGraph prototype, synthetic CRM, Azure OpenAI adapter, tests | Implemented prototype; live Azure unverified |
+| [01 — Customer Support Agent](01-customer-support-agent/README.md) | Hybrid architecture, Python + LangGraph prototype, synthetic CRM, Azure OpenAI adapter, tests | Implemented prototype; live Azure unverified |
 | [02 — Document Processing](02-document-processing/README.md) | Multi-stage extraction and validation architecture, approval workflow, failure recovery | Architecture-only |
 | [03 — Governed Agent Platform](03-enterprise-agent-platform/README.md) | Multi-tenant governance architecture, trust boundaries and incident response | Architecture-only |
 
