@@ -179,10 +179,10 @@ if project.startswith("01"):
         left_cap, right_cap = st.columns(2, gap="large")
         with left_cap:
             st.markdown("**Customer assistance**")
-            st.markdown("✓ Approved knowledge retrieval  \\n✓ Scoped synthetic balance lookup  \\n✓ Multi-intent requests")
+            st.markdown("✓ Approved knowledge retrieval · Scoped synthetic balance lookup · Multi-intent requests")
         with right_cap:
             st.markdown("**Governance & assurance**")
-            st.markdown("✓ Cross-account request blocking  \\n✓ Pre-inference high-risk screening  \\n✓ Execution metadata and reproducible tests")
+            st.markdown("✓ Cross-account blocking · Pre-inference risk screening · Execution metadata and reproducible tests")
         st.caption("Scope: working synthetic prototype. Identity is not externally verified; no production CRM, transactions, or staffed escalation integration.")
 
     with execution_tab:
