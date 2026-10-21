@@ -60,6 +60,18 @@ class AzureDocumentTests(unittest.TestCase):
         result = IntakeEngine().process(SAMPLES["Agreement requiring review"], model=model)
         self.assertEqual(result["issues"], ["model_inference_failed"])
 
+    def test_azure_malformed_bank_details_cannot_stage(self):
+        text = "Supplier Agreement\\nVendor ID: VEN-002\\nEffective Date: 2026-11-01\\nBank Account: invalid value!"
+        model = FakeModel({"document_type": "supplier_agreement", "fields": {
+            "vendor_id": "VEN-002", "effective_date": "2026-11-01"}})
+        engine = IntakeEngine()
+        result = engine.process(text, model=model)
+        self.assertEqual(result["status"], "needs_review")
+        self.assertIn("invalid_bank_account_format", result["issues"])
+        with self.assertRaises(ValueError):
+            engine.approve(result["workflow_id"], "reviewer")
+        self.assertEqual(engine.staged_count(), 0)
+
     def test_model_failure_does_not_poison_retry(self):
         engine = IntakeEngine()
         fail = FakeModel(error=RuntimeError("test outage"))
