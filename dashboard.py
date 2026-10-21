@@ -1,7 +1,7 @@
-"""Agent Control Center: offline, synthetic, policy-first portfolio demonstration.
+"""Agent Control Center: synthetic, policy-first portfolio demonstration.
 
 Run with: python -m streamlit run dashboard.py
-No Azure calls, verified identities, production data, or actual human-review queue.
+Optional Foundry inference; no verified identities, production data, or human-review queue.
 """
 import json
 import time
@@ -74,6 +74,20 @@ POLICY_LABELS = {
     "deny": "No demo identity for private read", "escalate": "Sensitive action blocked",
 }
 
+class MeteredModel:
+    """Count attempted and completed model invocations without recording secrets."""
+    def __init__(self, model):
+        self.model = model
+        self.attempted = 0
+        self.completed = 0
+
+    def invoke(self, messages):
+        self.attempted += 1
+        response = self.model.invoke(messages)
+        self.completed += 1
+        return response
+
+
 class DemoDecisionModel:
     """Offline contract test double; no language model is invoked."""
     def invoke(self, messages):
@@ -91,8 +105,8 @@ with st.sidebar:
     st.caption("PROJECT 01 · LOCAL DEMONSTRATION")
     st.divider()
     st.markdown("**Execution configuration**")
-    mode = st.radio("Decision engine", ["LangGraph · deterministic", "Bounded agent · simulated selection"],
-                    help="Both modes are offline. The simulated selection uses a local fake model.")
+    mode = st.radio("Decision engine", ["LangGraph · deterministic", "Bounded agent · simulated selection", "GPT-4.1 mini · Live Foundry"],
+                    help="Live Foundry sends eligible requests to Azure. Other modes are offline.")
     principal = st.selectbox("Simulated identity", ["Anonymous", "user-001", "user-002"],
                              help="Caller-provided demonstration context; NOT verified authentication.")
     st.divider()
@@ -107,7 +121,7 @@ st.markdown("""<div class="hero"><div class="eyebrow">SECURE AGENT ORCHESTRATION
 <h1>Agent Control Center</h1>
 <p>Explore bounded tool decisions, deterministic policy gates, account-scoped synthetic data, and safe escalation.</p></div>""", unsafe_allow_html=True)
 
-st.warning("SYNTHETIC DEMO · Identity is simulated; balances are fictional; no real LLM calls or live customer systems.")
+st.warning("SYNTHETIC DEMO · Identity is simulated; balances are fictional; live Foundry mode may call an external LLM. Never enter real customer data or secrets.")
 
 overview, execution_tab, evaluation_tab, architecture_tab = st.tabs(
     ["Overview", "Interactive execution", "Evaluation & evidence", "Architecture & limitations"])
@@ -116,7 +130,7 @@ with overview:
     st.subheader("Operational overview")
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Available demo scenarios", len(SCENARIOS))
-    m2.metric("Real LLM calls", 0)
+    m2.metric("Model calls attempted (last run)", st.session_state.get("execution", {}).get("real_llm_calls", 0))
     m3.metric("Write-enabled tools", 0)
     m4.metric("External CRM connections", 0)
     st.markdown("#### What this prototype demonstrates")
@@ -126,7 +140,7 @@ with overview:
               "High-risk actions and unauthenticated private reads are handled before model selection.", "pass")
     with b:
         panel("02 · EXECUTION", "Bounded routing",
-              "LangGraph routes requests; optional offline fake model exercises allowlisted tool decisions.", "neutral")
+              "LangGraph routes requests; optional fake model or live Foundry model proposes allowlisted tool decisions.", "neutral")
     with c:
         panel("03 · DATA PLANE", "Scoped synthetic adapters",
               "Account reads use the simulated principal, never a customer ID extracted from the request.", "pass")
@@ -149,9 +163,26 @@ with execution_tab:
             ctx = TrustedContext(None if principal == "Anonymous" else principal, principal != "Anonymous")
             started = time.perf_counter()
             policy = classify({"message": message, "context": ctx})["route"]
+            attempted = completed = 0
+            status = "offline"
             if mode.startswith("LangGraph"):
                 result = run(message, ctx)
                 engine = "Deterministic LangGraph"
+            elif mode.startswith("GPT-4.1"):
+                engine = "Live Foundry Responses API"
+                try:
+                    from dotenv import load_dotenv
+                    from src.support_agent.azure_model import make_azure_model
+                    load_dotenv()
+                    meter = MeteredModel(make_azure_model())
+                    result = run_agent(message, ctx, meter)
+                    attempted, completed = meter.attempted, meter.completed
+                    status = ("completed" if completed else "request failed or no model call")
+                except Exception:
+                    # Configuration errors are not exposed; avoid leaking URLs/keys.
+                    result = {"route": "escalate", "selected_tool": None,
+                              "response": "The live model is unavailable; request escalated."}
+                    status = "configuration or execution error"
             else:
                 result = run_agent(message, ctx, DemoDecisionModel())
                 engine = "Offline fake-model selection"
@@ -160,9 +191,9 @@ with execution_tab:
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 "request": message, "simulated_principal": principal, "engine": engine,
                 "policy": policy, "result": result, "duration_ms": elapsed,
-                "real_llm_calls": 0, "real_model_used": False,
+                "real_llm_calls": attempted, "real_model_used": completed > 0,\n                "model_calls_completed": completed, "model_status": status,
             }
-        st.caption("Requests are processed locally. No LLM is used; unsupported language may escalate or be misclassified.")
+        st.caption("Live mode sends eligible request text to Microsoft Foundry and may incur charges. Other modes run offline. Never enter secrets or real customer data.")
     with right:
         st.markdown("#### Safety posture")
         st.markdown("**Policy-first:** deterministic controls precede optional tool selection.")
@@ -180,12 +211,12 @@ with execution_tab:
         k1.metric("Final route", route)
         k2.metric("Policy classification", execution["policy"])
         k3.metric("Local elapsed time", f'{execution["duration_ms"]:.2f} ms')
-        k4.metric("Real LLM calls", 0)
+        k4.metric("Model calls attempted", execution["real_llm_calls"])
         st.markdown(
             f'<div class="response"><small>{safe(ROUTE_LABELS.get(route, "Execution result"))}</small>'
             f'<div>{safe(result.get("response", "No response returned"))}</div></div>',
             unsafe_allow_html=True)
-        st.caption("Latency measures the local Python execution path, not network inference or production response time.")
+        st.caption("Elapsed time is end-to-end local execution, including network latency when live inference is attempted. It is not a production SLA.")
 
         st.markdown("#### Execution path")
         st.caption("Evidence-derived workflow summary. These are NOT instrumented per-node LangGraph events.")
@@ -201,17 +232,17 @@ with execution_tab:
             arrow()
             if policy in ("escalate", "deny"):
                 panel("MODEL BYPASS", "No tool-selection invocation",
-                      "Policy terminated the request before the optional fake model.", "block")
+                      "Policy terminated the request before optional model selection.", "block")
             elif "selected_tool" in result:
                 panel("BOUNDED TOOL DECISION", str(result["selected_tool"]),
-                      "Selection produced by a local fake model, then validated against the allowlist.",
+                      "Selection proposed by the configured model and checked against the allowlist. Live calls completed: " + str(execution["model_calls_completed"]),
                       "neutral")
             else:
                 panel("LANGGRAPH ROUTE", "Deterministic graph branch",
                       "Graph routed to approved knowledge or synthetic CRM adapter.", "neutral")
             arrow()
             panel("FINAL OUTCOME", ROUTE_LABELS.get(route, route),
-                  "No transaction performed; no external model or customer system accessed.",
+                  "No transaction performed; no external customer system accessed. Live model attempts: " + str(execution["real_llm_calls"]),
                   "pass" if route in ("faq", "crm_read") else "block")
         with detail:
             st.markdown("**Execution metadata**")
@@ -219,7 +250,7 @@ with execution_tab:
                 "engine": execution["engine"], "simulated_principal": execution["simulated_principal"],
                 "policy_classification": execution["policy"], "selected_tool": result.get("selected_tool"),
                 "evidence_ids": result.get("evidence_ids", []), "route": route,
-                "real_model_used": False, "real_llm_calls": 0,
+                "real_model_used": execution["real_model_used"],\n                "real_llm_calls": execution["real_llm_calls"],\n                "model_calls_completed": execution["model_calls_completed"],\n                "model_status": execution["model_status"],
             })
             st.download_button("Download execution evidence", json.dumps(execution, indent=2),
                                file_name="agent-execution-synthetic.json", mime="application/json")
@@ -277,12 +308,12 @@ digraph G {
 - **Identity:** caller-provided demo context only; no JWT/OIDC verification.
 - **Knowledge:** static keyword retrieval, not semantic RAG or a comprehensive knowledge base.
 - **Account adapter:** read-only synthetic balances, not a live CRM.
-- **Model:** offline fake selection exercises a contract; no Azure inference or measured model cost.
+- **Model:** offline fake selection or optional live Foundry Responses API tool selection; no measured model cost.
 - **Observability:** execution summary is derived from function results, not streaming LangGraph node events.
 - **Human review:** escalation is a response outcome, not an integrated ticket queue.
 - **Evaluation:** 10 synthetic checks are useful regression evidence, not a guarantee of security or accuracy.
 """)
-    st.caption("Next phase: Azure deployment, real model-selected tools, instrumented traces, and broader adversarial tests.")
+    st.caption("Next phase: instrumented traces, cost measurement, and broader adversarial tests.")
 
 st.divider()
 st.caption("Independent architecture portfolio · Project 01 · Synthetic demonstration · No production security claims")
