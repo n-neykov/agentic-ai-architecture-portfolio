@@ -74,7 +74,7 @@ The baseline and tests work offline. The **AI Agent · Azure Foundry** dashboard
 | Wire $500 | user-001 | Escalate before inference |
 | What are your mortgage rates? | Anonymous | Escalate unsupported request |
 
-The user confirmed **93/93 automated tests passing** before the final Azure extraction hardening and **10/10 baseline evaluation scenarios passing** earlier. The latest additional regression tests require a fresh run. The user also verified live Foundry behavior for approved multi-intent, session identity, anonymous/cross-account denials, and high-risk escalation. **Live acceptance evidence:** Project 02 Azure valid invoice staged with source-line evidence; Project 03 Azure finance lookup allowed and cross-tenant request denied without a model call. Project 02 Azure agreement returned `model_inference_failed` and was safely held for review; successful extraction and validation-triggered review were not demonstrated in that run. These results are demonstration evidence, not production security certification.
+The user confirmed **93/93 automated tests passing** before the final Azure extraction hardening and **10/10 baseline evaluation scenarios passing** earlier. The latest additional regression tests require a fresh run. The user also verified live Foundry behavior for approved multi-intent, session identity, anonymous/cross-account denials, and high-risk escalation. **Live acceptance evidence:** Project 02 Azure valid invoice staged with source-line evidence; Project 03 Azure finance lookup allowed and cross-tenant request denied without a model call. Project 02 Azure supplier agreement subsequently extracted three grounded fields and returned `needs_review` with `sensitive_bank_details_require_review`; the earlier model-inference failure was corrected and retested. These results are demonstration evidence, not production security certification.
 
 ## Engineering decisions
 
@@ -95,7 +95,7 @@ The dashboard provides an overview, interactive execution, baseline evaluation, 
 
 **Security:** Never submit real customer data or secrets. Live Azure inference can incur charges. No production customer systems are connected.
 
-## Projects 02 and 03 — Executable offline prototypes
+## Projects 02 and 03 — Executable offline and optional Azure prototypes
 
 **Project 02:** Optional Azure GPT-4.1 mini classification/extraction plus deterministic provenance verification; synthetic invoice, tax-form and agreement intake; deterministic field extraction with line evidence; validation; human-review gate; tenant-scoped in-memory idempotency and staging. [Details](02-document-processing/README.md).
 
