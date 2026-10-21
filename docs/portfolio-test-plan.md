@@ -1,9 +1,10 @@
 # Three-project portfolio — Final acceptance plan
 
-Run from the repository root on branch `feature/bounded-llm-agent`:
+Run from the repository root on branch `main`:
 
 ```powershell
-git pull origin feature/bounded-llm-agent
+git switch main
+git pull origin main
 .\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
 .\.venv\Scripts\python.exe -m compileall -q src tests dashboard.py
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
@@ -42,4 +43,4 @@ Verify audit events and JSON export. These are simulated identity claims, not re
 
 ## Sign-off
 
-Do not merge until the final regression suite and dashboard smoke tests pass. Capture screenshots later from the same final commit. Never enter real customer/supplier records or commit credentials.
+The integrated three-project PR has been merged; rerun the regression suite after presentation changes and verify dashboard smoke tests. Capture screenshots later from the same final commit. Never enter real customer/supplier records or commit credentials.
