@@ -380,63 +380,137 @@ if project.startswith("01"):
     st.caption("Independent architecture portfolio · Project 01 · Synthetic demonstration · No production security claims")
 
 else:
-    previews = {
-        "02": {
-            "title": "Intelligent Document Processing",
-            "subtitle": "Synthetic document intake, structured extraction, validation and exception handling.",
-            "stages": [
-                ("01 · INTAKE", "Document submission", "Proposed: file validation, content-type checks, and malware scanning at ingress."),
-                ("02 · EXTRACTION", "Structured data extraction", "Proposed: schema-constrained fields with provenance and confidence."),
-                ("03 · VALIDATION", "Business-rule controls", "Proposed: field-level validation, duplicate checks, and confidence thresholds."),
-                ("04 · EXCEPTION", "Human review", "Proposed: route low-confidence or inconsistent results to a review queue."),
-            ],
-            "risk": "Prompt injection inside documents, sensitive-data exposure, and unverified extracted fields.",
-            "next": "Build a synthetic invoice fixture, deterministic validators, and an executable extraction demo.",
-        },
-        "03": {
-            "title": "Enterprise Agent Platform",
-            "subtitle": "Shared control plane for governed tools, agent identity, orchestration and auditability.",
-            "stages": [
-                ("01 · REGISTRY", "Agent and tool catalog", "Proposed: versioned capabilities, owners, and environment scopes."),
-                ("02 · AUTHORIZATION", "Policy enforcement point", "Proposed: server-side principal validation and per-tool least privilege."),
-                ("03 · ORCHESTRATION", "Bounded execution", "Proposed: budgets, approval gates, retries and termination policies."),
-                ("04 · OBSERVABILITY", "Audit and evaluation", "Proposed: trace correlation, redaction, evaluation, and incident response."),
-            ],
-            "risk": "Excessive tool permissions, cross-tenant leakage, unbounded loops and missing audit evidence.",
-            "next": "Create a simulated agent registry, permission matrix, and policy-decision walkthrough.",
-        },
-    }
-    spec = previews[project[:2]]
-    st.markdown(
-        f'<div class="hero"><div class="eyebrow">ENTERPRISE AGENT ARCHITECTURE · PROJECT {safe(project[:2])}</div>'
-        f'<h1>{safe(spec["title"])}</h1><p>{safe(spec["subtitle"])}</p></div>',
-        unsafe_allow_html=True,
-    )
-    st.info("ARCHITECTURE PREVIEW ONLY · This project is not yet an executable agent, document pipeline, or live integration.")
-    overview_preview, architecture_preview, roadmap_preview = st.tabs(
-        ["Architecture overview", "Workflow & trust boundaries", "Implementation roadmap"]
-    )
-    with overview_preview:
-        st.subheader("Target capabilities")
-        st.write(spec["subtitle"])
-        st.markdown("#### Proposed architecture components")
-        for stage, title, detail in spec["stages"]:
-            panel(stage, title, detail)
-        st.warning("Primary design risk: " + spec["risk"])
-    with architecture_preview:
-        st.subheader("Conceptual execution path")
-        st.caption("Proposed system design—not instrumented traces or evidence of implemented services.")
-        for index, (stage, title, detail) in enumerate(spec["stages"]):
-            if index:
-                arrow()
-            panel(stage, title, detail)
-        st.markdown("**Trust boundary:** Input content and model output remain untrusted. "
-                    "A server-side policy layer must validate identity, tool authority and structured outputs.")
-    with roadmap_preview:
-        st.subheader("Next executable milestone")
-        st.write(spec["next"])
-        st.markdown("**Status:** Architecture preview. No implementation tests or performance claims are available.")
-        st.markdown("**Portfolio approach:** Use synthetic fixtures, add reproducible offline tests, "
-                    "and only then label the project as a working prototype.")
+    if project.startswith("02"):
+        from src.document_processing.pipeline import IntakeEngine, SAMPLES, TYPES
+        st.markdown("""<div class="hero"><div class="eyebrow">PROJECT 02 / DOCUMENT INTELLIGENCE</div>
+        <h1>Intelligent Document Processing</h1>
+        <p>Deterministic supplier intake, field-level evidence, validation, human-review gates and idempotent staging.</p>
+        <div class="portfolio-meta"><span class="portfolio-chip">FUNCTIONAL OFFLINE PROTOTYPE</span>
+        <span class="portfolio-chip">SYNTHETIC DOCUMENTS</span>
+        <span class="portfolio-chip">REVIEW GATES</span></div></div>""", unsafe_allow_html=True)
+        st.caption("Local text-only fixtures. No OCR, Azure Document Intelligence, live ERP, external queue or real supplier records.")
+        if "doc_engine" not in st.session_state:
+            st.session_state["doc_engine"] = IntakeEngine()
+        engine = st.session_state["doc_engine"]
+        overview, execute, architecture = st.tabs(["Overview", "Document execution", "Architecture"])
+        with overview:
+            a,b,c = st.columns(3)
+            a.metric("Supported document types", len(TYPES))
+            b.metric("Synthetic fixtures", len(SAMPLES))
+            c.metric("Staged in this session", engine.staged_count())
+            st.markdown("**Processing contract:** classify → extract labeled fields with line evidence → validate vendor/schema → stage or request review.")
+            st.markdown("**Approval control:** bank-account details require explicit simulated reviewer approval; invalid records cannot be approved.")
+            st.markdown("**Idempotency:** tenant + document content hash identifies repeat submissions within the current process.")
+        with execute:
+            choice = st.selectbox("Document fixture", ["Custom document", *SAMPLES.keys()])
+            sample = SAMPLES.get(choice, SAMPLES["Valid invoice"])
+            tenant = st.selectbox("Simulated tenant", ["demo-tenant", "tenant-a", "tenant-b"])
+            content = st.text_area("Synthetic text document", value=sample, height=200)
+            if st.button("Process document", type="primary"):
+                try:
+                    st.session_state["doc_result"] = engine.process(content, tenant)
+                except ValueError as exc:
+                    st.error(str(exc))
+            result = st.session_state.get("doc_result")
+            if result:
+                st.subheader("Processing outcome")
+                st.metric("Status", result["status"].replace("_", " ").title())
+                st.caption("Workflow ID: " + result["workflow_id"] + (" · duplicate submission" if result["duplicate"] else ""))
+                left, right = st.columns(2)
+                with left:
+                    st.markdown("**Extracted fields**")
+                    st.json(result["fields"])
+                with right:
+                    st.markdown("**Source-line evidence**")
+                    st.json(result["evidence"])
+                if result["issues"]:
+                    st.warning("Review/validation issues: " + ", ".join(result["issues"]))
+                if result["status"] == "needs_review":
+                    reviewer = st.text_input("Simulated reviewer", value="reviewer-01")
+                    if st.button("Approve reviewable record"):
+                        try:
+                            st.session_state["doc_result"] = engine.approve(result["workflow_id"], reviewer, tenant)
+                            st.success("Approved for synthetic in-memory staging; no ERP write occurred.")
+                        except (ValueError, KeyError, PermissionError) as exc:
+                            st.error(str(exc))
+                st.markdown("**Audit trail**")
+                st.dataframe(result["audit"], use_container_width=True, hide_index=True)
+                st.download_button("Download synthetic processing evidence", json.dumps(result, indent=2),
+                                   file_name="document-intake-evidence.json", mime="application/json")
+        with architecture:
+            st.graphviz_chart("""digraph G {
+                rankdir=LR; bgcolor="transparent";
+                node [shape=box style="rounded,filled" fillcolor="#1d3046" fontcolor="white" color="#53718e"];
+                input [label="Synthetic Text Intake"]; classify [label="Type Classification"];
+                extract [label="Field Extraction + Line Evidence"]; validate [label="Schema + Vendor Rules"];
+                review [label="Simulated Human Review"]; stage [label="In-memory Staging"];
+                input -> classify -> extract -> validate; validate -> stage [label="valid"];
+                validate -> review [label="exception"]; review -> stage [label="approved"];
+            }""", use_container_width=True)
+            st.markdown("**Production gaps:** file upload validation, OCR, malware scanning, durable queue/state, real ERP integration, reviewer authentication, telemetry and cloud evaluation.")
+    else:
+        from src.enterprise_platform.governance import GovernedGateway, DEMO_PRINCIPALS, TOOLS
+        st.markdown("""<div class="hero"><div class="eyebrow">PROJECT 03 / ENTERPRISE GOVERNANCE</div>
+        <h1>Enterprise Agent Platform</h1>
+        <p>Tool registry, simulated identity, tenant/role enforcement, approval gates and inspectable audit decisions.</p>
+        <div class="portfolio-meta"><span class="portfolio-chip">FUNCTIONAL OFFLINE PROTOTYPE</span>
+        <span class="portfolio-chip">TENANT ISOLATION</span>
+        <span class="portfolio-chip">NO LIVE WRITES</span></div></div>""", unsafe_allow_html=True)
+        st.caption("Simulated identity claims only; no OIDC verification, production APIs, Azure infrastructure or persistent audit backend.")
+        if "governed_gateway" not in st.session_state:
+            st.session_state["governed_gateway"] = GovernedGateway()
+        gateway = st.session_state["governed_gateway"]
+        overview, execute, architecture = st.tabs(["Overview", "Governed tool execution", "Architecture"])
+        with overview:
+            a,b,c = st.columns(3)
+            a.metric("Registered tools", len(TOOLS))
+            b.metric("Demo principals", len(DEMO_PRINCIPALS))
+            c.metric("Audit events this session", len(gateway.audit))
+            st.markdown("**Control sequence:** simulated verification → registered tool → tenant boundary → role permission → approval gate → scoped read-only data.")
+            st.dataframe([{"tool": t.name, "department": t.department,
+                           "required_role": t.required_role, "approval_required": t.requires_approval}
+                          for t in TOOLS.values()], use_container_width=True, hide_index=True)
+        with execute:
+            principal_label = st.selectbox("Simulated principal", list(DEMO_PRINCIPALS))
+            selected_principal = DEMO_PRINCIPALS[principal_label]
+            tool_name = st.selectbox("Requested tool", list(TOOLS))
+            requested_tenant = st.selectbox("Requested tenant", ["tenant-a", "tenant-b"])
+            request_id = st.text_input("Request correlation ID", value="demo-request-001")
+            if st.button("Execute governed tool request", type="primary"):
+                st.session_state["gov_result"] = gateway.execute(selected_principal, tool_name, requested_tenant, request_id)
+            if st.button("Record simulated reviewer approval"):
+                ok = gateway.approve(request_id, selected_principal)
+                if ok:
+                    st.success("Simulated approval recorded. Payment updates remain disconnected.")
+                else:
+                    st.warning("Only a verified simulated principal with the approver role can approve.")
+            result = st.session_state.get("gov_result")
+            if result:
+                st.subheader("Policy decision")
+                st.metric("Outcome", result["status"].replace("_", " ").title())
+                st.write("**Reason:** " + result["reason"])
+                st.json(result["records"])
+                st.download_button("Download decision evidence", json.dumps(result, indent=2),
+                                   file_name="governance-decision.json", mime="application/json")
+            st.markdown("**Session audit events**")
+            if gateway.audit:
+                st.dataframe(gateway.audit, use_container_width=True, hide_index=True)
+                st.download_button("Download audit events", json.dumps(gateway.audit, indent=2),
+                                   file_name="synthetic-governance-audit.json", mime="application/json")
+        with architecture:
+            st.graphviz_chart("""digraph G {
+                rankdir=LR; bgcolor="transparent";
+                node [shape=box style="rounded,filled" fillcolor="#1d3046" fontcolor="white" color="#53718e"];
+                request [label="Simulated Principal + Tool Request"];
+                policy [label="Verification / Tenant / Role Policy"];
+                registry [label="Allowlisted Tool Registry"];
+                approval [label="Approval Gate"];
+                data [label="Tenant-filtered Synthetic Records"];
+                deny [label="Deny or Require Approval"];
+                request -> policy; policy -> registry [label="allowed"];
+                policy -> deny [label="blocked"]; registry -> approval;
+                approval -> data [label="read"]; approval -> deny [label="write"];
+            }""", use_container_width=True)
+            st.markdown("**Production gaps:** verified OIDC/JWT, managed identities, centralized policy service, real agent runtime, durable approvals, redacted telemetry and deployed Azure services.")
     st.divider()
-    st.caption("Independent architecture portfolio · Architecture preview · No production security claims")
+    st.caption("Independent enterprise AI portfolio · Functional synthetic offline prototype · Not production deployed")
