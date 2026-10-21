@@ -8,7 +8,7 @@ Three fictional enterprise case studies share a local Streamlit workspace. **Pro
 |---|---|---|
 | [01 · Secure Customer Service](01-customer-support-agent/README.md) | Policy-first AI orchestration, 12 approved FAQs, scoped synthetic account reads, multi-intent requests | **Working prototype** |
 | [02 · Document Processing](02-document-processing/README.md) | Extraction, validation, exception handling | **Working offline prototype** |
-| [03 · Enterprise Agent Platform](03-enterprise-agent-platform/README.md) | Tool governance, registry, identity, audit | Architecture preview |
+| [03 · Enterprise Agent Platform](03-enterprise-agent-platform/README.md) | Tool registry, tenant/role policy, simulated identity, approvals and audit | **Working offline prototype** |
 
 ## Project 01 — Why this architecture?
 
@@ -49,7 +49,7 @@ Python 3.11+ and Git required. On Windows PowerShell, from the repository root:
 ```powershell
 git clone https://github.com/n-neykov/agentic-ai-architecture-portfolio.git
 cd agentic-ai-architecture-portfolio
-git switch feature/bounded-llm-agent
+git switch main
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
@@ -72,7 +72,7 @@ For the v2 agent in the terminal, run `python -m src.support_agent.cli --v2 --me
 | Wire $500 | user-001 | Escalate before inference |
 | What are your mortgage rates? | Anonymous | Escalate unsupported request |
 
-The user confirmed **53/53 automated tests passing** and **10/10 baseline evaluation scenarios passing** before the 12-FAQ expansion. The user also verified live Foundry behavior for approved multi-intent, session identity, anonymous/cross-account denials, and high-risk escalation. **New FAQ tests and the updated dashboard require a fresh local/CI run; no new pass count is asserted.** These results are demonstration evidence, not production security certification.
+The user confirmed **53/53 automated tests passing** and **10/10 baseline evaluation scenarios passing** before the 12-FAQ expansion. The user also verified live Foundry behavior for approved multi-intent, session identity, anonymous/cross-account denials, and high-risk escalation. **The complete automated test suite and baseline evaluation passed GitHub Actions for the three-project integration; live dashboard acceptance is verified separately.** These results are demonstration evidence, not production security certification.
 
 ## Engineering decisions
 
@@ -89,7 +89,7 @@ The user confirmed **53/53 automated tests passing** and **10/10 baseline evalua
 
 ## Portfolio evidence
 
-The dashboard provides an overview, interactive execution, baseline evaluation, and architecture diagram. Capture screenshots of the overview, an approved multi-intent execution, a blocked cross-account request with zero model calls, and the evaluation results. Label all outputs **synthetic prototype**, and record the branch/commit SHA. A short screen recording is more accessible than requiring a reviewer to configure Azure.
+The dashboard provides an overview, interactive execution, baseline evaluation, and architecture diagram. Capture screenshots of the three project architecture views, an approved multi-intent execution, a blocked cross-account request with zero model calls, and the evaluation results. Label all outputs **synthetic prototype**, and record the branch/commit SHA. A short screen recording is more accessible than requiring a reviewer to configure Azure.
 
 **Security:** Never submit real customer data or secrets. Live Azure inference can incur charges. No production customer systems are connected.
 
@@ -99,4 +99,4 @@ The dashboard provides an overview, interactive execution, baseline evaluation, 
 
 **Project 03:** Synthetic enterprise tool gateway with registered capabilities, simulated principals, tenant and role policy, approval checks, scoped records and audit events. Sensitive writes remain disconnected. [Details](03-enterprise-agent-platform/README.md).
 
-Both projects have dashboard workspaces and automated tests. They do not use Azure model inference or real enterprise integrations. Follow the [final three-project acceptance plan](docs/portfolio-test-plan.md) before merging.
+Both projects have dashboard workspaces and automated tests. They do not use Azure model inference or real enterprise integrations. Follow the [final three-project acceptance plan](docs/portfolio-test-plan.md) for repeatable checks.
