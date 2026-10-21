@@ -7,11 +7,9 @@ import json
 import time
 from datetime import datetime, timezone
 from html import escape
-from types import SimpleNamespace
 
 import streamlit as st
 
-from src.support_agent.bounded_agent import run_agent
 from src.support_agent.agent_v2 import run_v2, plan
 from src.support_agent.core import TrustedContext
 from src.support_agent.evaluation import evaluate
@@ -102,18 +100,6 @@ class MeteredModel:
         return response
 
 
-class DemoDecisionModel:
-    """Offline contract test double; no language model is invoked."""
-    def invoke(self, messages):
-        prompt = str(messages[-1].content).lower()
-        if any(t in prompt for t in ("balance", "account amount")):
-            tool = "account_balance"
-        elif any(t in prompt for t in ("hour", "open", "fee", "charge", "card", "replace")):
-            tool = "faq_lookup"
-        else:
-            tool = "escalate"
-        return SimpleNamespace(content=json.dumps({"tool": tool}))
-
 with st.sidebar:
     st.markdown("### ◈ Agent Architecture Lab")
     project = st.selectbox("Project workspace", [
@@ -125,14 +111,16 @@ with st.sidebar:
     st.divider()
     if project.startswith("01"):
         st.markdown("**Runtime configuration**")
-        mode = st.radio("Decision engine", ["LangGraph · deterministic", "Bounded agent · simulated selection", "GPT-4.1 mini · Live Foundry", "Agent v2 · Live Foundry"], index=3,
-                        help="Live Foundry sends eligible requests to Azure. Other modes are offline.")
+        mode = st.radio("Execution mode", ["AI Agent · Azure Foundry", "Deterministic Baseline"],
+                        help="AI Agent uses GPT-4.1 mini for approved requests. Baseline runs without an LLM.")
+        st.caption("**AI Agent:** multi-intent tool execution with GPT-4.1 mini." if mode.startswith("AI Agent")
+                   else "**Baseline:** deterministic LangGraph routing without model inference.")
         principal = st.selectbox("Simulated identity", ["Anonymous", "user-001", "user-002"],
                                  help="Caller-provided demonstration context; NOT verified authentication.")
         st.divider()
         st.markdown("**Environment**")
         st.caption("● Policy engine · Local")
-        st.caption("● Inference · " + ("Microsoft Foundry (on execution)" if "Live Foundry" in mode else "Offline"))
+        st.caption("● Inference · " + ("Azure Foundry · on demand" if mode.startswith("AI Agent") else "Offline · no model calls"))
         st.caption("● Data · Synthetic, read-only")
         st.divider()
         st.caption("Independent portfolio · No production data")
@@ -152,7 +140,7 @@ if project.startswith("01"):
     st.caption("Demonstration environment · Simulated identity and fictional account data · Do not enter real customer information.")
 
     overview, execution_tab, evaluation_tab, architecture_tab = st.tabs(
-        ["Overview", "Live execution", "Evaluation", "Architecture"])
+        ["Overview", "Agent execution", "Evaluation", "Architecture"])
 
     with overview:
         st.markdown('<div class="portfolio-section">SYSTEM AT A GLANCE</div>', unsafe_allow_html=True)
@@ -201,32 +189,28 @@ if project.startswith("01"):
             if st.button("▶ Execute request", type="primary", disabled=not message.strip()):
                 ctx = TrustedContext(None if principal == "Anonymous" else principal, principal != "Anonymous")
                 started = time.perf_counter()
-                policy = (plan(message, ctx)["policy"] if mode.startswith("Agent v2")
+                policy = (plan(message, ctx)["policy"] if mode.startswith("AI Agent")
                           else classify({"message": message, "context": ctx})["route"])
                 attempted = completed = 0
                 status = "offline"
-                if mode.startswith("LangGraph"):
+                if mode.startswith("Deterministic"):
                     result = run(message, ctx)
                     engine = "Deterministic LangGraph"
-                elif "Live Foundry" in mode:
-                    engine = "Live Foundry Responses API" + (" · Agent v2" if mode.startswith("Agent v2") else "")
+                elif mode.startswith("AI Agent"):
+                    engine = "Azure Foundry · GPT-4.1 mini · Agent v2"
                     try:
                         from dotenv import load_dotenv
                         from src.support_agent.azure_model import make_azure_model
                         load_dotenv()
                         meter = MeteredModel(make_azure_model())
-                        result = (run_v2(message, ctx, meter) if mode.startswith("Agent v2")
-                              else run_agent(message, ctx, meter))
+                        result = run_v2(message, ctx, meter)
                         attempted, completed = meter.attempted, meter.completed
-                        status = ("completed" if completed else "blocked by deterministic policy" if policy in ("escalate", "deny") or (mode.startswith("Agent v2") and result.get("route") == "session_info") else "model invocation failed or returned no result")
+                        status = ("completed" if completed else "blocked by deterministic policy" if policy in ("escalate", "deny") or (mode.startswith("AI Agent") and result.get("route") == "session_info") else "model invocation failed or returned no result")
                     except Exception:
                         # Configuration errors are not exposed; avoid leaking URLs/keys.
                         result = {"route": "escalate", "selected_tool": None,
                                   "response": "The live model is unavailable; request escalated."}
                         status = "configuration or execution error"
-                else:
-                    result = run_agent(message, ctx, DemoDecisionModel())
-                    engine = "Offline fake-model selection"
                 elapsed = round((time.perf_counter() - started) * 1000, 2)
                 st.session_state["execution"] = {
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
@@ -235,7 +219,7 @@ if project.startswith("01"):
                     "real_llm_calls": attempted, "real_model_used": completed > 0,
                     "model_calls_completed": completed, "model_status": status,
                 }
-            st.caption("Live mode sends eligible request text to Microsoft Foundry and may incur charges. Other modes run offline. Never enter secrets or real customer data.")
+            st.caption("AI Agent mode sends approved request text to Azure Foundry and may incur charges. Baseline mode is offline. Use synthetic data only.")
         with right:
             st.markdown("#### Safety posture")
             st.markdown("**Policy-first:** deterministic controls precede optional tool selection.")
@@ -285,7 +269,7 @@ if project.startswith("01"):
                 arrow()
                 panel("FINAL OUTCOME", ROUTE_LABELS.get(route, route),
                       "No transaction performed; no external customer system accessed. Live model attempts: " + str(execution["real_llm_calls"]),
-                      "pass" if route in ("faq", "crm_read") else "block")
+                      "pass" if route in ("faq", "crm_read", "multi", "session_info") else "block")
             with detail:
                 st.markdown("**Execution metadata**")
                 st.json({
@@ -326,39 +310,57 @@ if project.startswith("01"):
                    "Save terminal/CI screenshots separately and record the commit SHA.")
 
     with architecture_tab:
-        st.subheader("Policy-first architecture")
+        st.subheader("System architecture")
+        st.caption("Policy-controlled tool access. Model output cannot grant account permissions or execute financial transactions.")
         st.graphviz_chart(r"""
     digraph G {
-      rankdir=TB; bgcolor="transparent";
-      node [shape=box style="rounded,filled" fillcolor="#1d3046" color="#53718e" fontcolor="white" fontname="Arial"];
-      request [label="Customer request\n+ simulated identity"];
-      policy [label="Deterministic policy gate"];
-      decision [label="Approved routing\n(LangGraph / fake model)"];
-      faq [label="Static approved FAQ"];
-      crm [label="Scoped synthetic CRM"];
-      deny [label="Deny / escalation"];
-      response [label="Grounded response"];
+      rankdir=TB; bgcolor="transparent"; nodesep=0.48; ranksep=0.6;
+      graph [pad="0.2"];
+      node [shape=box style="rounded,filled" fillcolor="#1d3046" color="#53718e"
+            fontcolor="white" fontname="Arial" fontsize=13 margin="0.25,0.16"];
+      edge [color="#7894ad" arrowsize=0.7];
+      request [label="Customer Request\nSimulated Session Identity"];
+      policy [label="Policy & Authorization Gate"];
+      agent [label="Bounded AI Orchestration\nGPT-4.1 mini / LangGraph baseline"];
+      faq [label="Approved Knowledge\nPublic FAQs"];
+      account [label="Synthetic Account Data\nRead-only, identity-scoped"];
+      session [label="Session Information\nSimulated identity only"];
+      block [label="Deny or Escalate" fillcolor="#49312d" color="#9b625b"];
+      response [label="Customer Response"];
       request -> policy;
-      policy -> decision [label="permitted" fontcolor="white"];
-      policy -> deny [label="blocked" fontcolor="white"];
-      decision -> faq;
-      decision -> crm;
-      decision -> deny;
+      policy -> agent [label="approved" fontcolor="#a8c8de"];
+      policy -> block [label="blocked" fontcolor="#a8c8de"];
+      agent -> faq;
+      agent -> account;
+      agent -> session;
+      agent -> block;
       faq -> response;
-      crm -> response;
+      account -> response;
+      session -> response;
     }
     """, use_container_width=True)
-        st.markdown("#### Trust boundaries and current limitations")
-        st.markdown("""
-    - **Identity:** caller-provided demo context only; no JWT/OIDC verification.
-    - **Knowledge:** static keyword retrieval, not semantic RAG or a comprehensive knowledge base.
-    - **Account adapter:** read-only synthetic balances, not a live CRM.
-    - **Model:** offline fake selection or optional live Foundry Responses API tool selection; no measured model cost.
-    - **Observability:** execution summary is derived from function results, not streaming LangGraph node events.
-    - **Human review:** escalation is a response outcome, not an integrated ticket queue.
-    - **Evaluation:** 10 synthetic checks are useful regression evidence, not a guarantee of security or accuracy.
-    """)
-        st.caption("Next phase: instrumented traces, cost measurement, and broader adversarial tests.")
+        st.markdown("#### Component responsibilities")
+        st.table({
+            "Component": ["Policy gate", "AI orchestration", "Knowledge source",
+                          "Account data", "Session identity", "Safe fallback"],
+            "Responsibility": [
+                "Screens high-risk requests and enforces account scope before inference.",
+                "Selects bounded tools and handles approved multi-intent requests.",
+                "Retrieves answers from three fictional, approved FAQ records.",
+                "Returns read-only synthetic balances for the simulated caller.",
+                "Displays caller-provided demo identity; no real sign-in or IAM.",
+                "Denies unauthorized access or recommends human review.",
+            ],
+        })
+        with st.expander("Prototype boundaries and production considerations"):
+            st.markdown("""
+            - **Identity:** simulated session only; production requires verified authentication and authorization.
+            - **Knowledge:** keyword-matched static FAQs; not semantic retrieval.
+            - **Account data:** fictional balances; no external CRM or banking integration.
+            - **Human review:** escalation is a response outcome, not a staffed ticket queue.
+            - **Observability:** execution summaries are not instrumented distributed traces.
+            - **Evaluation:** ten predefined scenarios; not a production security certification.
+            """)
 
     st.divider()
     st.caption("Independent architecture portfolio · Project 01 · Synthetic demonstration · No production security claims")
