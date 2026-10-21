@@ -4,22 +4,26 @@
 
 ## Client scenario
 
-A fictional multinational wants a reusable agent tool control plane for HR, finance and IT. Tool execution must honor verified identity claims, tenant boundaries, roles and approval requirements. This prototype **simulates** verification and demonstrates the authorization decision chain.
+A fictional multinational wants a reusable agent tool control plane for HR, finance and IT. Tool execution must honor simulated identity claims, tenant boundaries, roles and approval requirements. This prototype **simulates** verification and demonstrates the authorization decision chain.
 
 ## Implemented architecture
 
 ```mermaid
 flowchart TD
-  U["Simulated principal + tenant + requested tool"] --> I{"Identity marked verified?"}
-  I -->|"No"| D["Deny + audit"]
-  I -->|"Yes"| T{"Tool registered?"}
-  T -->|"No"| D
-  T -->|"Yes"| P{"Tenant matches and role permitted?"}
-  P -->|"No"| D
-  P -->|"Yes"| A{"Approval required?"}
-  A -->|"Yes, not approved"| H["Approval required + audit"]
-  A -->|"Approved write"| W["Deny: live writes disconnected"]
-  A -->|"Read-only"| R["Tenant-filtered synthetic records"]
+  U["Simulated principal + request + tenant"] --> I{"Verified demo identity and same tenant?"}
+  I -->|No| D["Deny + audit; no model call"]
+  I -->|Yes| M{"Execution mode"}
+  M -->|Offline| T["User-selected registered tool"]
+  M -->|Azure| L["GPT-4.1 mini: JSON tool nomination"]
+  L --> V{"Registered allowlisted tool?"}
+  V -->|No| D2["Deny + audit"]
+  V -->|Yes| T
+  T --> P{"Role permitted?"}
+  P -->|No| D2
+  P -->|Yes| A{"Approval required?"}
+  A -->|Yes; not approved| H["Approval required + audit"]
+  A -->|Approved write| W["Deny: no live write connector"]
+  A -->|Read-only| R["Tenant-filtered synthetic records"]
   R --> O["Allow + audit"]
 ```
 
@@ -55,7 +59,7 @@ Select **03 · Enterprise Agent Platform** in Streamlit:
 
 ## Design tradeoffs and production gaps
 
-This is a **governance control-plane simulation**, not a complete autonomous agent runtime. `verified=True` is a synthetic test flag, **not JWT verification**. Audit records and approvals are in memory, not immutable. The data catalog is a static fixture, not Azure AI Search. No model inference, managed identity, service mesh, real tool API, or deployment is integrated into Project 03.
+This is a **governance control-plane simulation with optional model-assisted routing**, not a complete autonomous agent runtime. `verified=True` is a synthetic test flag, **not JWT verification**. Audit records and approvals are in memory, not immutable. The data catalog is a static fixture, not Azure AI Search. Optional Azure GPT-4.1 mini model inference is integrated for tool selection. Managed identity, service mesh, real tool APIs and production deployment are not integrated.
 
 For enterprise deployment, integrate OIDC/Entra token validation, downstream policy enforcement, tenant-scoped managed identities, centralized tool registry and approval workflow, real retrieval ACLs, redacted audit traces, CI/CD, security incident playbooks, and measured availability/latency/cost.
 
