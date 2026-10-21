@@ -118,6 +118,13 @@ class IntakeEngine:
                 result["mode"] = "azure"
                 return dict(result)
         issues = validate(kind, fields)
+        # A bank-account label must never bypass review because its value
+        # failed the narrow extraction regex.
+        if re.search(r"(?im)^\\s*Bank Account\\s*:", text):
+            if "bank_account" not in fields:
+                issues.append("invalid_bank_account_format")
+            elif "sensitive_bank_details_require_review" not in issues:
+                issues.append("sensitive_bank_details_require_review")
         status = "needs_review" if issues else "staged"
         audit = [
             {"event": "received", "workflow_id": workflow_id, "tenant": tenant_id},
@@ -144,8 +151,10 @@ class IntakeEngine:
             raise PermissionError("Cross-tenant approval denied")
         if result["status"] == "staged":
             return dict(result)
-        if any(x.startswith("missing_") or x in ("unknown_vendor", "invalid_amount", "invalid_effective_date", "unsupported_currency", "unsupported_document_type") for x in result["issues"]):
-            raise ValueError("Invalid records require correction before approval")
+        # Only the explicitly reviewable bank-detail issue may be approved.
+        # Unknown/new issue codes must fail closed rather than being waived.
+        if not result["issues"] or set(result["issues"]) != {"sensitive_bank_details_require_review"}:
+            raise ValueError("Only validated sensitive bank details are reviewable")
         result["status"] = "staged"
         result["staged"] = True
         result["audit"].append({"event": "approved_and_staged", "reviewer": reviewer, "target": "synthetic_in_memory_outbox"})
