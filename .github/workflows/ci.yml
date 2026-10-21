@@ -1,0 +1,27 @@
+name: Python tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install runtime dependencies
+        run: python -m pip install -r requirements-azure.txt
+      - name: Confirm agent dependencies available
+        run: python -c "import langgraph; import langchain_openai; import dotenv"
+      - name: Compile Python sources
+        run: python -m compileall -q src tests
+      - name: Unit and graph tests
+        run: python -m unittest discover -s tests -v
+      - name: Synthetic routing evaluation
+        run: python -m src.support_agent.cli --evaluate
+      - name: Offline FAQ smoke test
+        run: python -m src.support_agent.cli --message "What are your hours?"
