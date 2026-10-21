@@ -3,12 +3,23 @@
 IMPORTANT: Authentication is trusted only as a caller-supplied server-side assertion.
 The demo does not verify JWTs or implement production IAM.
 """
+import re
 from typing import TypedDict
 from .core import TrustedContext
 from .integrations import retrieve_approved, scoped_balance
 
 HIGH_RISK=('transfer','wire','send money','close account','refund','change address','reset password')
 ACCOUNT=('balance','account amount')
+ACCOUNT_REFERENCE = re.compile(r'(?<![a-z0-9])user[\s_-]*0*(\d+)(?![a-z0-9])', re.IGNORECASE)
+
+def cross_account_reference(message: str, principal_id: str | None) -> bool:
+    """Reject explicit references to another synthetic account before model calls.
+
+    This narrow fixture-ID rule is NOT a general entity-resolution or IAM solution.
+    """
+    references = {int(match) for match in ACCOUNT_REFERENCE.findall(message)}
+    own = ACCOUNT_REFERENCE.fullmatch(principal_id or "")
+    return bool(references and (not own or any(ref != int(own.group(1)) for ref in references)))
 
 class State(TypedDict, total=False):
     message: str
@@ -21,6 +32,7 @@ def classify(state: State) -> State:
     m=state['message'].lower()
     ctx=state['context']
     if any(x in m for x in HIGH_RISK): route='escalate'
+    elif cross_account_reference(state['message'], ctx.principal_id): route='deny'
     elif any(x in m for x in ACCOUNT): route='crm' if ctx.authenticated and ctx.principal_id else 'deny'
     else: route='knowledge'
     return {'route':route}
@@ -47,7 +59,7 @@ def knowledge(state: State, model=None) -> State:
     return {'route':'faq','response':answer,'evidence_ids':[d.doc_id for d in docs]}
 
 def finish(state: State) -> State:
-    if state['route']=='deny': return {'response':'Please sign in to view account information.'}
+    if state['route']=='deny': return {'response':'Account access is not authorized for this request.'}
     return {'response':'A human specialist must review this request.'}
 
 def build_graph(model=None):

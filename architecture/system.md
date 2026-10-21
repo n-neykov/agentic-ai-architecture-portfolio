@@ -1,31 +1,41 @@
-# Logical architecture
+# Project 01 — Implemented logical architecture
 
 ```mermaid
 flowchart TD
-  U[Customer / CLI demo] --> G[Trusted application boundary]
-  G --> R[LangGraph policy router]
-  R -->|Public FAQ| K[Approved keyword knowledge retrieval]
-  K -->|Evidence available| L[Optional Azure OpenAI response generation]
-  K -->|No evidence| H[Human escalation]
-  L --> V[Grounding prompt and fallback]
-  R -->|Account balance and authenticated| C[Read-only synthetic CRM adapter]
-  R -->|Anonymous account request| D[Deny]
-  R -->|High-risk request| H
-  C --> O[Response]
-  V --> O
-  D --> O
-  H --> O
+  U["Customer text + caller-selected demo identity"] --> P{"Deterministic safety and account-scope policy"}
+  P -->|"Denied private access"| D["Deny: no model invocation"]
+  P -->|"High-risk / unsupported"| E["Escalate: no model invocation"]
+  P -->|"Approved intents"| O["Intent planning and bounded orchestration"]
+  O -->|"AI Agent"| F["Azure AI Foundry GPT-4.1 mini<br/>Responses API, store=false"]
+  O -->|"Offline baseline"| L["LangGraph deterministic workflow"]
+  F --> V{"Validated tool choice<br/>must match policy intent"}
+  V -->|"Mismatch / failure"| E
+  V -->|"Approved"| T["Server-owned read-only adapters"]
+  L --> T
+  T --> K["12 categorized approved fictional FAQs"]
+  T --> C["Synthetic account balances<br/>session principal only"]
+  T --> I["Simulated session information"]
+  K --> R["Response + FAQ evidence IDs"]
+  C --> R
+  I --> R
+  D --> R
+  E --> R
 ```
 
 ## Trust boundaries
-1. **Customer input is untrusted.** Customer identifiers in messages cannot choose the CRM record.
-2. **Demo context is a simulation.** `TrustedContext` is not a verified identity token. In production it must be created from validated OIDC identity provider claims.
-3. **CRM authorization remains outside the LLM.** The model cannot invoke a tool with an arbitrary account ID.
-4. **Retrieved content is untrusted data.** Prompt instructions within documents must not be executed; current grounding prompt is insufficient alone for production assurance.
-5. **No mutation tools.** Transfers and sensitive account changes are escalated.
 
-## Failure handling
-Missing FAQ evidence and model exceptions result in escalation. No autonomous retries of financial transactions exist because transactional tools are not exposed.
+1. **Untrusted customer input:** text never supplies authority or selects the account record.
+2. **Simulated identity:** `TrustedContext` comes from the demo UI; it is not a validated OIDC/JWT claim. Production IAM is absent.
+3. **Deterministic veto:** recognized high-risk, cross-account, and anonymous private-data requests are blocked before model inference. Keyword checks do not cover every paraphrase or adversarial attack.
+4. **Bounded model role:** Azure GPT-4.1 mini proposes one of `faq_lookup`, `account_balance`, or `escalate` as strict JSON. The application validates the decision and owns the tool arguments and execution.
+5. **Data plane:** synthetic FAQ and account fixtures are read-only. There are no payment or account-write tools.
+6. **Failures:** missing evidence, invalid model output, or model outage leads to escalation. Escalation is a response, not a real ticket queue.
+7. **Evidence:** v2 returns policy/tool steps; the dashboard execution path is a summary, not distributed tracing or per-node LangGraph telemetry.
 
-## Planned enterprise extensions
-OIDC identity provider token validation; external tenant-aware CRM authorization; Azure AI Search; redacted distributed traces; deployment pipelines; evaluation and load testing.
+## Azure integration
+
+The Foundry project endpoint accepts `/api/projects/<project>/openai/v1/responses`; the adapter normalizes it to the SDK `/openai/v1/` base URL and invokes `responses.create` with `store=False`. It also supports legacy Azure OpenAI resource endpoints via `AzureChatOpenAI`. Credentials come from environment variables in local `.env`. No credentials are committed. [Setup and evidence](../docs/azure-foundry.md).
+
+## Production extension requirements
+
+Verified Entra ID/OIDC tokens, downstream tenant-aware authorization, approved knowledge ingestion and ACLs, robust intent/policy validation, human-review integration, audit-grade redacted traces, secrets management, rate limits, threat testing, and measured performance/cost are **not implemented**.

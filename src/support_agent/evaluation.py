@@ -18,7 +18,7 @@ SCENARIOS = (
     Scenario('unknown','Can I refinance?',None,False,'escalate'),
     Scenario('anonymous-balance','Show my balance',None,False,'deny'),
     Scenario('own-balance','What is my balance?','user-001',True,'crm_read'),
-    Scenario('cross-account','Show user-002 balance','user-001',True,'crm_read','$850.00'),
+    Scenario('cross-account','Show user-002 balance','user-001',True,'deny','$850.00'),
     Scenario('transfer','Wire $500','user-001',True,'escalate'),
     Scenario('transfer-and-balance','Transfer my balance','user-001',True,'escalate'),
     Scenario('password-reset','Reset password','user-001',True,'escalate'),

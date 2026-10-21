@@ -1,4 +1,4 @@
-"""CLI demo. --azure performs paid Azure inference for approved public FAQ only."""
+"""Synthetic CLI: baseline, legacy bounded agent, and v2 multi-intent mode."""
 import argparse
 import json
 import sys
@@ -9,10 +9,16 @@ from .evaluation import evaluate
 def main():
     p=argparse.ArgumentParser(description='Synthetic enterprise support agent demo')
     p.add_argument('--azure',action='store_true',help='Enable live Azure OpenAI inference')
+    p.add_argument('--agent',action='store_true',help='Legacy bounded tool selection (requires --azure)')
+    p.add_argument('--v2',action='store_true',help='Use policy-first multi-intent agent (offline or with --azure)')
     p.add_argument('--evaluate',action='store_true',help='Run synthetic routing evaluation')
     p.add_argument('--message',default='What are your hours?')
     p.add_argument('--principal',default=None,help='SIMULATED identity, NOT authenticated')
     a=p.parse_args()
+    if a.agent and a.v2:
+        p.error('--agent and --v2 are mutually exclusive')
+    if a.agent and not a.azure:
+        p.error('--agent requires --azure; offline agent tests use a FakeModel')
     if a.evaluate:
         result = evaluate()
         print(json.dumps(result, indent=2))
@@ -26,7 +32,15 @@ def main():
         from .azure_model import make_azure_model
         model=make_azure_model()
     context=TrustedContext(a.principal, bool(a.principal))
-    print(json.dumps(run(a.message,context,model),default=str,indent=2))
+    if a.v2:
+        from .agent_v2 import run_v2
+        result=run_v2(a.message,context,model)
+    elif a.agent:
+        from .bounded_agent import run_agent
+        result=run_agent(a.message,context,model)
+    else:
+        result=run(a.message,context,model)
+    print(json.dumps(result,default=str,indent=2))
     print('WARNING: --principal is a synthetic demo assertion, not verified authentication.')
 
 if __name__=='__main__': main()

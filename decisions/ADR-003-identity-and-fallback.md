@@ -1,21 +1,20 @@
-# ADR-003 — Server-authorized tools and safe fallback
+# ADR-003 — Identity-scoped read-only tools and fail-closed outcomes
 
-**Status:** Accepted for prototype; production controls outstanding.
-
-## Context
-A customer-facing agent must not infer authority from user-supplied text or LLM-generated tool arguments. A missing/failed Azure model response must not result in fabricated account facts.
+**Status: Accepted for prototype; production authorization not implemented**
 
 ## Decision
-1. Identity is represented by a trusted-context object supplied by the application boundary; the CLI simulates this boundary, **not** an identity provider.
-2. CRM balance lookup accepts only the principal from trusted context. The LLM is not permitted to select account IDs.
-3. High-risk actions are routed to human escalation before any model invocation.
-4. Approved-document retrieval returns document identifiers and evidence; absent evidence or failed inference results in escalation.
-5. No payment, account modification, or transactional tool is exposed.
 
-## Alternatives
-- LLM-selected account identifiers: rejected due to authorization risk.
-- Vectorizing CRM balances: rejected due to stale and sensitive data exposure.
-- Full autonomous multi-agent system: rejected for the bounded FAQ MVP due to cost, complexity and auditability.
+1. Simulated session identity is supplied outside customer text. It is **not** verified IAM.
+2. Explicit references to another synthetic user are denied before model invocation; matching own-account references can proceed.
+3. The read-only balance adapter accepts only the simulated session principal; the LLM cannot supply account IDs.
+4. Known high-risk requests escalate before model invocation.
+5. Model failures, mismatched/invalid tool decisions and missing evidence escalate.
+6. No write, money transfer or account modification tools exist.
 
-## Consequences / residual risks
-This prototype does not validate OIDC identity provider tokens, implement tenant isolation, enforce authorization in an external CRM, verify generated answer entailment, or persist audit traces. These are release blockers, not implied capabilities.
+## Tradeoffs
+
+The explicit synthetic-ID matching and keyword policy are intentionally narrow. This is not tenant-aware production authorization, comprehensive prompt-injection protection or an integrated human queue. Real deployment requires validated Entra/OIDC identity, CRM-side authorization, redacted audit trails and incident procedures.
+
+## Evidence
+
+Offline tests and user-observed live Foundry scenarios demonstrate the bounded fixture behavior, not real customer security.

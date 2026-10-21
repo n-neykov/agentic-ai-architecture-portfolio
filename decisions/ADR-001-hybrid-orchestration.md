@@ -1,20 +1,26 @@
-# ADR-001 — Hybrid deterministic and agentic orchestration
+# ADR-001 — Hybrid policy-first agent orchestration
 
-**Status:** Accepted
+**Status: Accepted and implemented for synthetic Project 01**
 
 ## Decision
-Use deterministic policy routing for authentication gates, account requests and high-risk operations. Use LangGraph to express the workflow and optional Azure OpenAI only for synthesis over approved public FAQs.
+
+Keep recognized high-risk actions, cross-account references and anonymous private-data requests under deterministic application policy. Use LangGraph for an offline baseline and a bounded v2 orchestrator for multi-intent requests. GPT-4.1 mini through Azure AI Foundry can propose strict JSON tool choices, but cannot grant account access or execute writes.
 
 ## Why
-A fictional financial-services client has cost and deadline constraints. A fully autonomous agent increases complexity, token usage, and the surface area for prompt injection without demonstrable business value for routine requests.
 
-## Alternatives
-- Fully managed vendor agent: faster deployment, but unknown licensing and integration constraints.
-- Fully custom autonomous multi-agent platform: maximum flexibility but disproportionate MVP complexity.
-- Purely deterministic chatbot: cheap and auditable but limited language flexibility.
+An unrestricted autonomous agent adds cost, complexity and security exposure without a compelling requirement for this narrow support workload. Read-only tools, explicit fallback and a reproducible offline suite offer clearer assurance boundaries.
 
-## Tradeoff
-Hybrid routing reduces freedom and increases explicit workflow code; it improves testability, cost predictability and access-control separation.
+## Alternatives considered
 
-## Revisit when
-Real task complexity, operational benchmarks, and vendor constraints justify adding more autonomous behavior.
+- Fully managed vendor agent: faster possible deployment, but unknown commercial/integration constraints.
+- Autonomous multi-agent orchestration: greater flexibility, harder permissioning and audit.
+- Deterministic-only workflow: simple and cheap, but no live model-driven selection.
+- **Chosen hybrid:** deterministic authority with bounded model assistance.
+
+## Accepted limitations
+
+Keyword policy misses paraphrases, v2 intent planning remains deterministic, JSON selection is not native provider tool calling, and production IAM/CRM authorization are absent. Escalation may increase containment cost.
+
+## Evidence
+
+User-verified live GPT-4.1 mini scenarios, 53 passing tests and 10/10 baseline evaluation **before** the 12-FAQ expansion. New tests require rerun.

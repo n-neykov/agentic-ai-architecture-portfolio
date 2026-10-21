@@ -1,17 +1,19 @@
-# Threat model — STRIDE-inspired
+# Project 01 — STRIDE-inspired threat model
 
-**Assets:** customer identity, account data, approved documents, inference credentials, logs, tool permissions.
+**Assets:** synthetic identity context, fictional account records, approved FAQ documents, Azure inference credentials, tool permissions, and execution evidence.
 
-| Threat | Attack path | Prototype mitigation | Production gap |
+| Threat | Example attack | Implemented mitigation | Production gap |
 |---|---|---|---|
-| Spoofing | Forged customer identity | TrustedContext object separates message text from principal | Real Entra ID token validation absent |
-| Information disclosure | User requests another account | CRM adapter uses principal, not message ID | Real CRM tenant authorization absent |
-| Tampering / prompt injection | Malicious retrieved text | Fixed corpus, evidence-only grounding prompt | Robust adversarial tests and isolation absent |
-| Elevation of privilege | Agent executes a transfer | No transactional tools; deterministic escalation | External authorization and approval workflow absent |
-| Denial of service | Model outage or timeout | Error fallback to human escalation | Rate limits, circuit breaker, SLOs absent |
-| Repudiation | User denies sensitive action | No sensitive action implemented | Tamper-evident audit trail absent |
-| Credential disclosure | API key in repository | .gitignore and .env.example | Managed identity / Key Vault not integrated |
+| Spoofing | Caller chooses another user | Demo `TrustedContext` separates identity from message text; account IDs in text cannot override it | Identity selector itself is unverified; require OIDC/Entra ID and downstream checks |
+| Information disclosure | `user-001` requests `user-002` balance | Explicit synthetic account references are compared against session principal before inference | Pattern matching is narrow; real tenant-aware authorization and robust entity parsing needed |
+| Prompt injection | Customer text instructs model to bypass policy | Deterministic veto and JSON tool allowlist; no write tools | Adversarial and paraphrase testing incomplete |
+| Elevation of privilege | Agent sends funds or changes credentials | No write or transaction tools; recognized sensitive requests escalate | Real approval workflow and transaction authorization absent |
+| Denial of service | Azure outage, timeout or malformed output | Model exceptions and mismatches escalate; limited retries and timeout | Rate limiting, quotas, circuit breaker and SLO monitoring absent |
+| Repudiation | User disputes an agent action | Execution metadata and optional local JSON export | No tamper-evident audit store or trace correlation |
+| Credential disclosure | API key exposed in source or screenshot | Local `.env` and example placeholders; no intentional key logging | Managed identity/Key Vault and credential scanning not integrated |
 
-**Incident response exercise:** For a suspected cross-account exposure, disable account-read path, preserve logs/evidence, identify affected sessions, remediate authorization, run negative tests, review privacy obligations and obtain approval before restoring service.
+## Incident-response exercise
 
-**Residual risk:** This project must not process real customer records.
+If cross-account information is suspected to have leaked, disable the account-read capability, preserve relevant evidence securely, assess the exposure and affected users, notify the appropriate security/privacy stakeholders, fix the authorization boundary, rerun negative tests, and require release approval before restoration.
+
+**Residual risk:** the synthetic identity selector and keyword policy are **not** production authentication or comprehensive security controls. Do not process real customer data.

@@ -1,63 +1,55 @@
-# Case Study 02 — Multi-Agent Document Intake and Review
+# Project 02 — Intelligent Document Processing
 
-**Status:** Architecture-only reference design. No working implementation or client deployment is claimed.
+**Status:** Executable offline synthetic reference prototype with Streamlit workspace and automated tests. No OCR, Azure Document Intelligence, durable queue or real ERP is connected.
 
 ## Client scenario
-A fictional enterprise processes 12,000 supplier onboarding documents per month. Staff manually classify documents, extract required fields, reconcile inconsistent records, and route exceptions for review.
 
-## Requirements
-- Classify invoices, tax forms and supplier agreements.
-- Extract fields with source-page citations and confidence scores.
-- Validate against schema and approved vendor records.
-- Escalate conflicting or sensitive changes for human approval.
-- Retain an auditable chain of custody; no autonomous payment execution.
+A fictional supplier onboarding team processes invoices, tax forms and agreements. The objective is to minimize manual handling without allowing unvalidated extraction or sensitive banking changes to flow into enterprise systems.
 
-## Proposed design
+## Implemented workflow
+
 ```mermaid
 flowchart TD
-    I[Upload gateway + malware scan] --> Q[Queue + workflow state]
-    Q --> C[Classifier]
-    C --> X[Document extraction worker]
-    X --> V[Deterministic schema and business-rule validation]
-    V -->|Pass| R[Review / approval policy]
-    V -->|Fail or low confidence| H[Human review]
-    R -->|Requires approval| H
-    R -->|Approved safe metadata| E[ERP staging adapter]
-    H -->|Approved correction| E
-    E --> A[Audit and telemetry]
+  I["Synthetic text document + tenant"] --> H["Tenant-scoped content hash / duplicate check"]
+  H --> C["Document type classification"]
+  C --> X["Regex field extraction + source-line evidence"]
+  X --> V{"Required fields / vendor / business-rule validation"}
+  V -->|"Valid"| S["In-memory synthetic staging"]
+  V -->|"Missing / invalid"| R["Needs review; correction required"]
+  V -->|"Bank account field"| A["Named simulated reviewer approval"]
+  A --> S
+  R --> M["Manual correction outside demo"]
 ```
 
-## Architecture decisions
-1. **Do not use agents for deterministic validation.** Use explicit schema checks, field constraints and referential integrity.
-2. **Specialize by capability, not by buzzword.** Classification and extraction may use distinct model prompts/workers; workflow state is controlled centrally.
-3. **Human approval before durable changes.** An agent cannot create or update payment instructions.
-4. **Idempotent operations.** Document hash + workflow ID prevents duplicate processing after retries.
-5. **Document provenance.** Extracted fields link to page/section evidence; confidence alone does not prove correctness.
+### Working capabilities
 
-## Failure and recovery
-- Corrupt files → quarantine, alert and manual processing.
-- Extraction timeout → bounded retry with backoff; dead-letter queue after threshold.
-- Conflicting vendor data → manual reconciliation.
-- Duplicate submission → idempotent return of existing workflow result.
-- ERP unavailable → staged outbox, retry and reconciliation; no blind re-submission.
+- Three document types: **invoice**, **tax form**, **supplier agreement**.
+- Five synthetic text fixtures and custom text input.
+- Structured field extraction with line-number evidence.
+- Required-field validation, synthetic vendor allowlist, amount/currency/date checks.
+- Sensitive bank-account fields held for named simulated reviewer approval.
+- Missing/invalid data cannot be approved without correction.
+- Tenant-scoped SHA-256 document fingerprints, in-memory idempotency, and staged-record counts.
+- Structured audit events and downloadable JSON evidence.
+- Automated offline regression tests.
 
-## Security and privacy
-Tenant-scoped storage and queue identities; malware scanning; content isolation against prompt injection; encryption; retention policy; redacted telemetry; human approval for vendor banking changes.
+### Demo walkthrough
 
-## Tradeoffs
-| Alternative | Advantage | Concern |
-|---|---|---|
-| Single prompt extracts everything | Low orchestration cost | Poor observability and weak validation |
-| Specialized workers + deterministic validation (chosen) | Explicit evidence and review gates | More components and operational complexity |
-| Fully autonomous agent network | Flexible | Unnecessary authority and unpredictable costs |
+Select **02 · Intelligent Document Processing** in Streamlit. Run **Valid invoice** (staged), run it again (duplicate, not staged twice), run **Missing invoice amount** (needs review and cannot be approved), then run **Agreement requiring review** (approval required; named simulated reviewer may stage it).
 
-## Illustrative evaluation plan (targets, not measured)
-- 98% document classification accuracy on labeled holdout set.
-- 95% field-level extraction F1, stratified by document type.
-- 100% manual review for bank-account changes.
-- 0 duplicate ERP writes in retry tests.
-- Measured cost/document, p95 processing time, exception rate.
+```powershell
+.\.venv\Scripts\python.exe -m unittest tests.test_document_processing -v
+.\.venv\Scripts\python.exe -m streamlit run dashboard.py
+```
 
-## What remains to implement
-OCR/document parsing, durable state, queue, ERP adapter, approval UI, labeled evaluation corpus, operational telemetry and load tests.
+## Trust boundaries and limitations
 
+The intake engine accepts **plain synthetic text**, not uploaded PDFs or scanned images. It does not perform OCR, malware scanning, document AI inference, model confidence scoring, or real source-page citations; evidence is a **source-line reference**. Tenant and reviewer identities are simulated, not verified. State, approvals, audit and staging are **in memory only**, not durable or transactionally safe. No ERP API or payment write exists.
+
+### Enterprise extension
+
+Real deployment would require secure file ingress, malware scanning, Azure AI Document Intelligence or equivalent OCR/extraction, versioned schemas, model-quality evaluation, durable queues and idempotent outbox, real identity/approval workflows, ERP staging integration, retention/redaction, and measured processing quality and cost.
+
+**Illustrative targets, not measured:** 98% classification accuracy, 95% field F1, zero duplicate writes in retry tests, mandatory human review for bank-detail changes, and p95 processing latency within an agreed SLO.
+
+[Source](../src/document_processing/pipeline.py) · [Tests](../tests/test_document_processing.py) · [Portfolio README](../README.md)

@@ -1,79 +1,59 @@
-# Project 01 — Secure AI Customer Service Orchestration Platform
+# Project 01 — Secure Customer Service Agent
 
-**Status:** Implemented offline Python/LangGraph reference prototype. No live cloud inference or production customer system has been validated.
+**Status: functional synthetic prototype; live Azure AI Foundry GPT-4.1 mini integration user-verified.**
 
-## Scenario and objective
+## Business scenario
 
-A fictional financial-services support team receives repetitive public FAQs, requests for account balances, and sensitive requests such as transfers. The design objective is to automate narrow, verifiable tasks while keeping authorization and high-risk operations outside the model.
+A fictional financial-services support operation wants to automate repetitive support inquiries without delegating account authorization or sensitive transactions to a language model. The reference implementation focuses on explicit trust boundaries, repeatable tests, and clear escalation.
 
-## Request path and controls
+## Implemented components
 
-1. A CLI request enters a deterministic policy router in [`workflow.py`](../src/support_agent/workflow.py).
-2. High-risk keywords (transfers, wires, password resets and similar) escalate before retrieval or model inference.
-3. Balance requests require a simulated trusted context. The [synthetic CRM adapter](../src/support_agent/integrations.py) uses the principal from that context, not an account ID in the message.
-4. Public FAQ requests use a fixed approved keyword corpus. Missing evidence escalates.
-5. An optional [model adapter](../src/support_agent/azure_model.py) generates text only after FAQ retrieval; inference errors escalate.
+| Component | Implementation | Authority |
+|---|---|---|
+| Policy gate | [`workflow.py`](../src/support_agent/workflow.py), [`agent_v2.py`](../src/support_agent/agent_v2.py) | Rejects known high-risk, cross-account, and anonymous private-data requests before inference |
+| AI decision | [`bounded_agent.py`](../src/support_agent/bounded_agent.py) | Strict JSON allowlist; model cannot provide account IDs or execute writes |
+| Azure integration | [`azure_model.py`](../src/support_agent/azure_model.py) | Foundry Responses API adapter for GPT-4.1 mini; optional AzureChatOpenAI resource compatibility |
+| Knowledge | [`integrations.py`](../src/support_agent/integrations.py) | 12 categorized synthetic FAQ records with evidence IDs and deterministic matching |
+| Account access | [`integrations.py`](../src/support_agent/integrations.py) | Read-only synthetic balances, scoped to the simulated session principal |
+| Baseline | [`workflow.py`](../src/support_agent/workflow.py) | Offline deterministic LangGraph routing |
+| UI | [`dashboard.py`](../dashboard.py) | Two modes, execution summaries, evaluation and architecture |
+| Tests | [`tests/`](../tests/) | Offline regression suite including v2 multi-intent and 12-topic FAQ coverage |
 
-The prototype's classifier is keyword-based, so its routing is **not a production-grade intent or authorization system**. The CLI's `--principal` parameter simulates identity and cannot validate it.
+## Key behavior
 
-## Architecture and implementation
+- **Approved:** public FAQs, simulated own-account balance, session identity, combined FAQ + balance requests.
+- **Denied:** explicit cross-account references and anonymous balance requests.
+- **Escalated:** known sensitive operations, unsupported questions, missing evidence, or model/tool-selection failures.
+- **Never available:** transfers, writes, real customer data, arbitrary account-ID tool arguments.
 
-| Artifact | Location |
-|---|---|
-| Logical diagram and trust boundaries | [System architecture](../architecture/system.md) |
-| Working LangGraph state machine | [Workflow](../src/support_agent/workflow.py) |
-| Dependency-free baseline | [Core router](../src/support_agent/core.py) |
-| Synthetic CRM and FAQ evidence | [Adapters](../src/support_agent/integrations.py) |
-| Optional Azure OpenAI adapter | [Model](../src/support_agent/azure_model.py) |
-| Automated tests | [Tests](../tests/) |
-| Ten scenario definitions | [Evaluation code](../src/support_agent/evaluation.py) |
-| STRIDE-inspired security analysis | [Threat model](../docs/threat-model.md) |
-| Production gaps | [Release readiness](../docs/release-readiness.md) |
+The v2 agent performs deterministic intent planning and requires matching model-selected tools when live mode is used. It is **bounded orchestration**, not open-ended autonomous planning. The offline LangGraph baseline and v2 AI mode are intentionally different implementations.
 
-## Reproducible quickstart (Windows PowerShell)
+## Example live demonstrations
 
-From the repository root, using Python 3.11:
+| Message | Identity | Expected route |
+|---|---|---|
+| `What are your hours?` | Anonymous | `faq` |
+| `What are your hours and what is my balance?` | user-001 | `multi` |
+| `What user am I?` | user-001 | `session_info` |
+| `Show user002 balance` | user-001 | `deny` |
+| `Show user002 balance` | user-002 | `crm_read` |
+| `Wire $500` | user-001 | `escalate` |
+
+## Reproduce
 
 ```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-azure.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe -m src.support_agent.cli --evaluate
+.\.venv\Scripts\python.exe -m streamlit run dashboard.py
 ```
 
-## Concrete demonstration cases
+The CLI exposes legacy/baseline and bounded-agent paths; the **Agent v2** experience is available in the dashboard. See [Azure setup](../docs/azure-foundry.md) and [dashboard guide](../docs/dashboard.md).
 
-| Message | Simulated principal | Expected route | Expected behavior |
-|---|---|---|---|
-| `What are your hours?` | none | `faq` | Returns synthetic approved hours |
-| `What is my account balance?` | none | `deny` | Requests sign-in |
-| `Show user-002 balance` | `user-001` | `crm_read` | Returns **user-001's** synthetic $120, not user-002's $850 |
-| `Transfer $500 to user-002 and show my balance` | `user-001` | `escalate` | No transfer is executed |
-| `Can I refinance?` | none | `escalate` | Unsupported question is not invented |
+## Validation and limitations
 
-Example:
+Before the FAQ expansion, the user confirmed **53 passing tests**, **10/10 synthetic baseline evaluation scenarios**, and working live Foundry demonstrations. The added FAQ regression tests need to be rerun; do not infer an updated pass count.
 
-```powershell
-.\.venv\Scripts\python.exe -m src.support_agent.cli --principal user-001 --message "Show user-002 balance"
-```
+The demo identity is caller-selected and **not authenticated**. FAQ retrieval is keyword-based, not Azure AI Search or semantic RAG. There is no production CRM, staffed review queue, real transaction tool, production observability, or measured cost/SLA.
 
-## Recorded evidence
-
-The offline Windows run reported **18 passing unit/graph tests**. The evaluation CLI reported **10 of 10 synthetic scenarios passing**. CI has also been observed passing on `main`. These are functional regression results, not proof of adversarial robustness, real authentication, production authorization, latency, ROI or live cloud connectivity.
-
-## Architectural tradeoffs
-
-| Selected approach | Reason | Tradeoff |
-|---|---|---|
-| Deterministic policy routing before inference | Prevent high-risk requests reaching generative steps | Keyword matching misses paraphrases; production needs stronger policy and intent validation |
-| Explicit LangGraph transitions | Inspectable, testable workflow boundaries | More framework overhead than a simple function |
-| Synthetic, read-only CRM | Demonstrate account scoping without mutating records | Does not exercise external authorization or failure modes |
-| Fixed approved FAQ corpus | Repeatable, inspectable evidence | Limited coverage; no vector search or semantic RAG |
-| Escalate on missing evidence/model failure | Avoid unsupported answers | Increases manual workload |
-| Optional cloud model | Offline tests remain reproducible without credentials | Live integration remains unverified |
-
-See the [ADRs](../decisions/) and [cost assumptions](../docs/cost-model.md) for deeper analysis.
-
-## Production boundary
-
-Real deployment would require verified OIDC claims, tenant-aware downstream CRM authorization, adversarial testing, observability/redaction, resilience testing, secrets management and operational approval. This repository is an **offline reference prototype**, not a customer-ready service.
+[Architecture](../architecture/system.md) · [Threat model](../docs/threat-model.md) · [Release readiness](../docs/release-readiness.md) · [Case study](../docs/case-study.md)
