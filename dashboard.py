@@ -12,6 +12,7 @@ from types import SimpleNamespace
 import streamlit as st
 
 from src.support_agent.bounded_agent import run_agent
+from src.support_agent.agent_v2 import run_v2, plan
 from src.support_agent.core import TrustedContext
 from src.support_agent.evaluation import evaluate
 from src.support_agent.workflow import classify, run
@@ -68,10 +69,12 @@ SCENARIOS = {
 ROUTE_LABELS = {
     "faq": "Approved knowledge answer", "crm_read": "Scoped synthetic CRM read",
     "deny": "Access denied", "escalate": "Human review recommended",
+    "multi": "Multiple approved tools", "session_info": "Simulated session identity",
 }
 POLICY_LABELS = {
     "knowledge": "Public knowledge candidate", "crm": "Private read candidate",
     "deny": "Private data access blocked", "escalate": "Sensitive action blocked",
+    "allow": "Approved bounded intents",
 }
 
 class MeteredModel:
@@ -111,14 +114,14 @@ with st.sidebar:
     st.divider()
     if project.startswith("01"):
         st.markdown("**Execution configuration**")
-        mode = st.radio("Decision engine", ["LangGraph · deterministic", "Bounded agent · simulated selection", "GPT-4.1 mini · Live Foundry"],
+        mode = st.radio("Decision engine", ["LangGraph · deterministic", "Bounded agent · simulated selection", "GPT-4.1 mini · Live Foundry", "Agent v2 · Live Foundry"],
                         help="Live Foundry sends eligible requests to Azure. Other modes are offline.")
         principal = st.selectbox("Simulated identity", ["Anonymous", "user-001", "user-002"],
                                  help="Caller-provided demonstration context; NOT verified authentication.")
         st.divider()
         st.markdown("**Runtime indicators**")
         st.success("● Local policy backend available")
-        if mode.startswith("GPT-4.1"):
+        if "Live Foundry" in mode:
             st.warning("● Live Foundry selected · API calls may incur charges")
             st.caption("Live inference is attempted only for policy-permitted requests. Check execution metadata for completed calls.")
         else:
@@ -175,22 +178,24 @@ if project.startswith("01"):
             if st.button("▶ Execute request", type="primary", disabled=not message.strip()):
                 ctx = TrustedContext(None if principal == "Anonymous" else principal, principal != "Anonymous")
                 started = time.perf_counter()
-                policy = classify({"message": message, "context": ctx})["route"]
+                policy = (plan(message, ctx)["policy"] if mode.startswith("Agent v2")
+                          else classify({"message": message, "context": ctx})["route"])
                 attempted = completed = 0
                 status = "offline"
                 if mode.startswith("LangGraph"):
                     result = run(message, ctx)
                     engine = "Deterministic LangGraph"
-                elif mode.startswith("GPT-4.1"):
-                    engine = "Live Foundry Responses API"
+                elif "Live Foundry" in mode:
+                    engine = "Live Foundry Responses API" + (" · Agent v2" if mode.startswith("Agent v2") else "")
                     try:
                         from dotenv import load_dotenv
                         from src.support_agent.azure_model import make_azure_model
                         load_dotenv()
                         meter = MeteredModel(make_azure_model())
-                        result = run_agent(message, ctx, meter)
+                        result = (run_v2(message, ctx, meter) if mode.startswith("Agent v2")
+                              else run_agent(message, ctx, meter))
                         attempted, completed = meter.attempted, meter.completed
-                        status = ("completed" if completed else "blocked by deterministic policy" if policy in ("escalate", "deny") else "model invocation failed or returned no result")
+                        status = ("completed" if completed else "blocked by deterministic policy" if policy in ("escalate", "deny") or (mode.startswith("Agent v2") and result.get("route") == "session_info") else "model invocation failed or returned no result")
                     except Exception:
                         # Configuration errors are not exposed; avoid leaking URLs/keys.
                         result = {"route": "escalate", "selected_tool": None,
