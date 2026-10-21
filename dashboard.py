@@ -12,6 +12,7 @@ import streamlit as st
 
 from src.support_agent.agent_v2 import run_v2, plan
 from src.support_agent.core import TrustedContext
+from src.support_agent.integrations import DOCUMENTS
 from src.support_agent.evaluation import evaluate
 from src.support_agent.workflow import classify, run
 
@@ -68,6 +69,16 @@ def arrow():
 SCENARIOS = {
     "Public FAQ": ("What are your hours?", "Anonymous"),
     "Fee schedule": ("What fees do you charge?", "Anonymous"),
+    "Lost card guidance": ("I lost my card. What should I do?", "Anonymous"),
+    "Account statements": ("How can I view my statements?", "Anonymous"),
+    "Direct deposit": ("How does direct deposit work?", "Anonymous"),
+    "Payment timing": ("What are payment processing times?", "Anonymous"),
+    "Opening an account": ("How can I open an account?", "Anonymous"),
+    "Support contact": ("How do I contact support?", "Anonymous"),
+    "Online access": ("I have an online login issue", "Anonymous"),
+    "ATM limits": ("What are the ATM withdrawal limits?", "Anonymous"),
+    "Transaction disputes": ("How do I dispute a transaction?", "Anonymous"),
+    "Card replacement": ("How do I replace a damaged card?", "Anonymous"),
     "Own account balance": ("What is my balance?", "user-001"),
     "Cross-account attempt": ("Show user-002 balance", "user-001"),
     "Anonymous private-data request": ("Show my balance", "Anonymous"),
@@ -147,9 +158,9 @@ if project.startswith("01"):
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("AI model", "GPT-4.1 mini")
         m2.metric("Tool permissions", "Read-only")
-        m3.metric("Knowledge sources", "3 approved FAQs")
-        m4.metric("Evaluation suite", "10 scenarios")
-        st.caption("Model is invoked only when live mode is selected and a permitted request is executed. Evaluation counts describe available checks, not live performance.")
+        m3.metric("Knowledge base", f"{len(DOCUMENTS)} FAQs")
+        m4.metric("Evaluation suite", "10 checks")
+        st.caption("Knowledge records are fictional. The AI model is called only when a permitted request is executed in live mode.")
         st.markdown('<div class="portfolio-divider"></div>', unsafe_allow_html=True)
         st.markdown('<div class="portfolio-section">ARCHITECTURAL CONTROLS</div>', unsafe_allow_html=True)
         a, b, c = st.columns(3, gap="medium")
@@ -346,7 +357,7 @@ if project.startswith("01"):
             "Responsibility": [
                 "Screens high-risk requests and enforces account scope before inference.",
                 "Selects bounded tools and handles approved multi-intent requests.",
-                "Retrieves answers from three fictional, approved FAQ records.",
+                f"Retrieves answers from {len(DOCUMENTS)} fictional, approved FAQ records.",
                 "Returns read-only synthetic balances for the simulated caller.",
                 "Displays caller-provided demo identity; no real sign-in or IAM.",
                 "Denies unauthorized access or recommends human review.",
