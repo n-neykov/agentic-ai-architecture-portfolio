@@ -10,19 +10,20 @@ A fictional supplier onboarding team processes invoices, tax forms and agreement
 
 ```mermaid
 flowchart TD
-  I["Synthetic text document + tenant"] --> H["Tenant-scoped content hash / duplicate check"]
-  H --> M{"Execution mode"}
-  M -->|Offline| C["Deterministic classification and regex extraction"]
-  M -->|Azure| A["GPT-4.1 mini classification and field proposal"]
-  A --> X["Verify proposed fields against source lines; preserve grounded labels"]
-  C --> X
-  X --> V{"Required fields / vendor / business-rule validation"}
-  X -->|"Invalid model output"| F["Fail closed: needs review, no staging"]
-  V -->|"Valid"| S["In-memory synthetic staging"]
-  V -->|"Missing / invalid"| R["Needs review; correction required"]
-  V -->|"Bank account field"| G["Named simulated reviewer approval"]
-  G --> S
-  R --> M["Manual correction outside demo"]
+  I["Synthetic document text + tenant"] --> H["Tenant-scoped fingerprint / replay check"]
+  H --> Q{"Extraction mode"}
+  Q -->|Offline| C["Deterministic classification and extraction"]
+  Q -->|Azure| A["GPT-4.1 mini: proposed document type + fields"]
+  A --> X{"Source header and field evidence verified?"}
+  X -->|No| F["Fail closed: needs review; no staging"]
+  X -->|Yes| V["Deterministic required-field, vendor and business-rule checks"]
+  C --> V
+  V --> G{"Validation outcome"}
+  G -->|Valid; no sensitive fields| S["Synthetic in-memory staging"]
+  G -->|Missing or invalid fields| R["Needs correction; no approval"]
+  G -->|Sensitive bank field| B["Needs named simulated reviewer"]
+  B -->|Approved| S
+  B -->|Not approved| W["Held; no staging"]
 ```
 
 ### Optional Azure mode
@@ -41,7 +42,7 @@ Choose **AI-assisted · Azure Foundry** in Document execution. The shared Projec
 - Structured audit events and downloadable JSON evidence.
 - Automated offline regression tests.
 
-**Observed live limitation:** The valid Azure invoice staged successfully. The Azure agreement test previously returned `model_inference_failed` rather than reaching the bank-detail review rule. The extraction hardening and regression tests target this scenario; rerun the live agreement case before claiming successful model-assisted review.
+**Observed live acceptance:** The valid Azure invoice staged with source-line evidence. The Azure supplier agreement extracted vendor ID, effective date and bank account, then returned `needs_review` with `sensitive_bank_details_require_review` and line evidence. These are user-observed synthetic runs, not measured extraction accuracy.
 
 ### Demo walkthrough
 
