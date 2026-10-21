@@ -10,15 +10,16 @@ from .integrations import retrieve_approved, scoped_balance
 
 HIGH_RISK=('transfer','wire','send money','close account','refund','change address','reset password')
 ACCOUNT=('balance','account amount')
-ACCOUNT_REFERENCE = re.compile(r'(?<![a-z0-9])user-\d+(?![a-z0-9])', re.IGNORECASE)
+ACCOUNT_REFERENCE = re.compile(r'(?<![a-z0-9])user[\s_-]*0*(\d+)(?![a-z0-9])', re.IGNORECASE)
 
 def cross_account_reference(message: str, principal_id: str | None) -> bool:
     """Reject explicit references to another synthetic account before model calls.
 
     This narrow fixture-ID rule is NOT a general entity-resolution or IAM solution.
     """
-    references = {match.lower() for match in ACCOUNT_REFERENCE.findall(message)}
-    return bool(references and (not principal_id or any(ref != principal_id.lower() for ref in references)))
+    references = {int(match) for match in ACCOUNT_REFERENCE.findall(message)}
+    own = ACCOUNT_REFERENCE.fullmatch(principal_id or "")
+    return bool(references and (not own or any(ref != int(own.group(1)) for ref in references)))
 
 class State(TypedDict, total=False):
     message: str
