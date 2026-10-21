@@ -27,10 +27,18 @@ class BoundedAgentTests(unittest.TestCase):
         self.assertEqual(model.calls, 1)
 
     def test_model_selects_scoped_balance(self):
-        result = run_agent("Show user-002 balance", self.user, FakeModel('{"tool":"account_balance"}'))
-        self.assertEqual(result["route"], "crm_read")
-        self.assertIn("$120.00", result["response"])
+        model = FakeModel('{"tool":"account_balance"}')
+        result = run_agent("Show user-002 balance", self.user, model)
+        self.assertEqual(result["route"], "deny")
+        self.assertEqual(model.calls, 0)
+        self.assertNotIn("$120.00", result["response"])
         self.assertNotIn("$850.00", result["response"])
+
+    def test_own_balance_still_works(self):
+        model = FakeModel('{"tool":"account_balance"}')
+        result = run_agent("Show user-001 balance", self.user, model)
+        self.assertEqual(result["route"], "crm_read")
+        self.assertEqual(model.calls, 1)
 
     def test_anonymous_balance_blocked_before_model(self):
         model = FakeModel('{"tool":"account_balance"}')
