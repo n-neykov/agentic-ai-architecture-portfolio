@@ -170,7 +170,9 @@ if project.startswith("01"):
                            "Change it in the sidebar if needed.")
             message = st.text_area("Customer request", value=default_message, height=110,
                                    help="Free-text input is accepted, but offline keyword routing has limited coverage.")
-            if st.button("▶ Execute request", type="primary", disabled=not message.strip()):
+            if not message.strip():
+            st.info("Enter a request before executing. Blank requests do not call the model.")
+        if st.button("▶ Execute request", type="primary", disabled=not message.strip()):
                 ctx = TrustedContext(None if principal == "Anonymous" else principal, principal != "Anonymous")
                 started = time.perf_counter()
                 policy = classify({"message": message, "context": ctx})["route"]
