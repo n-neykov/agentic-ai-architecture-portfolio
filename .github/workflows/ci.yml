@@ -18,7 +18,7 @@ jobs:
       - name: Confirm agent dependencies available
         run: python -c "import langgraph; import langchain_openai; import dotenv"
       - name: Compile Python sources
-        run: python -m compileall -q src tests
+        run: python -m compileall -q src tests dashboard.py
       - name: Unit and graph tests
         run: python -m unittest discover -s tests -v
       - name: Synthetic routing evaluation
