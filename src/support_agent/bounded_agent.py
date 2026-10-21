@@ -43,7 +43,7 @@ def run_agent(message: str, context: TrustedContext, model) -> dict:
     if policy == "escalate":
         return {"route": "escalate", "selected_tool": None, "response": ESCALATION}
     if policy == "deny":
-        return {"route": "deny", "selected_tool": None, "response": "Please sign in to view account information."}
+        return {"route": "deny", "selected_tool": None, "response": "Account access is not authorized for this request."}
     try:
         selected = choose_tool(model, message)
     except (Exception):
