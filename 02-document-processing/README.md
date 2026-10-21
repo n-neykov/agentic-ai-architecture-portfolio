@@ -1,6 +1,6 @@
 # Project 02 — Intelligent Document Processing
 
-**Status:** Executable offline synthetic reference prototype with Streamlit workspace and automated tests. No OCR, Azure Document Intelligence, durable queue or real ERP is connected.
+**Status:** Executable synthetic reference prototype with deterministic offline mode and optional live Azure GPT-4.1 mini classification/extraction, Streamlit workspace and automated tests. No OCR, Azure Document Intelligence, durable queue or real ERP is connected.
 
 ## Client scenario
 
@@ -20,6 +20,10 @@ flowchart TD
   A --> S
   R --> M["Manual correction outside demo"]
 ```
+
+### Optional Azure mode
+
+Choose **AI-assisted · Azure Foundry** in Document execution. The shared Project 01 .env config is used. GPT-4.1 mini proposes document type and JSON fields. Python checks that every returned field exactly matches the original labeled source line, detects bank details independently, and runs the same validation/review/staging gates. A malformed response, ungrounded field or model outage results in **needs_review** with no staging. Offline and Azure document fingerprints are separated. No OCR or live supplier integrations are implied.
 
 ### Working capabilities
 
