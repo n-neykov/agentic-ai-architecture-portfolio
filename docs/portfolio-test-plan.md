@@ -44,3 +44,14 @@ Verify audit events and JSON export. These are simulated identity claims, not re
 ## Sign-off
 
 The integrated three-project PR has been merged; rerun the regression suite after presentation changes and verify dashboard smoke tests. Capture screenshots later from the same final commit. Never enter real customer/supplier records or commit credentials.
+
+## Optional live Azure Foundry acceptance tests (Projects 02 and 03)
+
+Requires the same private local `.env` as Project 01. No keys are stored in GitHub.
+Select the Azure execution mode inside each project's dashboard tab.
+
+**Project 02:** Process the valid invoice in AI-assisted mode. Expected: `mode=azure`, staged, verified source-line evidence. Process the agreement with bank details; expected: needs_review, never automatic staging. Submit an unsupported or unlabeled synthetic text; expected: needs_review, not fabricated fields. Offline and Azure document fingerprints are independent. The Azure model is a structured extraction proposer, not an OCR engine.
+
+**Project 03:** Choose Finance reader tenant A, requested tenant A, and ask "Find the finance reporting procedure." Expected: model selects `finance_report_lookup`, gateway allows tenant-A record only. Repeat with requested tenant B; expected: cross_tenant_access and model_called=false. Choose HR reader tenant A and ask for finance reporting; expected: role_not_permitted even if GPT selects the finance tool. Choose Finance admin and ask to update vendor payment details; expected: approval_required and no actual write.
+
+Model failures and malformed output must fail closed. Azure calls may incur charges. Automated tests use fake models and do not attest to live inference.
