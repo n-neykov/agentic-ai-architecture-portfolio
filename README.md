@@ -2,7 +2,7 @@
 
 **Independent architecture and engineering portfolio** · Python · LangGraph · Azure AI Foundry · Streamlit
 
-Three fictional enterprise case studies share a local Streamlit workspace. **Project 01 is an executable, synthetic customer-service prototype with a user-verified live GPT-4.1 mini integration.** Projects 02 and 03 are now executable offline synthetic reference prototypes, not deployed services.
+Three fictional enterprise case studies share a local Streamlit workspace. **Project 01 is an executable, synthetic customer-service prototype with a user-verified live GPT-4.1 mini integration.** Projects 02 and 03 are executable synthetic reference prototypes with deterministic offline modes and optional live GPT-4.1 mini inference using the same Azure Foundry configuration as Project 01. None is a deployed production service.
 
 | Project | Scope | Status |
 |---|---|---|
@@ -95,8 +95,8 @@ The dashboard provides an overview, interactive execution, baseline evaluation, 
 
 ## Projects 02 and 03 — Executable offline prototypes
 
-**Project 02:** Synthetic invoice, tax-form and agreement intake; deterministic field extraction with line evidence; validation; human-review gate; tenant-scoped in-memory idempotency and staging. [Details](02-document-processing/README.md).
+**Project 02:** Optional Azure GPT-4.1 mini classification/extraction plus deterministic provenance verification; synthetic invoice, tax-form and agreement intake; deterministic field extraction with line evidence; validation; human-review gate; tenant-scoped in-memory idempotency and staging. [Details](02-document-processing/README.md).
 
-**Project 03:** Synthetic enterprise tool gateway with registered capabilities, simulated principals, tenant and role policy, approval checks, scoped records and audit events. Sensitive writes remain disconnected. [Details](03-enterprise-agent-platform/README.md).
+**Project 03:** Optional Azure GPT-4.1 mini natural-language tool selection with independent deterministic authorization; synthetic enterprise tool gateway with registered capabilities, simulated principals, tenant and role policy, approval checks, scoped records and audit events. Sensitive writes remain disconnected. [Details](03-enterprise-agent-platform/README.md).
 
-Both projects have dashboard workspaces and automated tests. They do not use Azure model inference or real enterprise integrations. Follow the [final three-project acceptance plan](docs/portfolio-test-plan.md) for repeatable checks.
+Both projects have dashboard workspaces, offline and optional Azure modes, and automated mocked-model tests. Neither has real enterprise integrations. Live Azure mode uses the existing local .env configuration and incurs inference costs. Follow the [final three-project acceptance plan](docs/portfolio-test-plan.md) for repeatable checks.
