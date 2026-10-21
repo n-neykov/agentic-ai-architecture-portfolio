@@ -92,6 +92,17 @@ The [Azure OpenAI adapter](src/support_agent/azure_model.py) can generate an ans
 
 This optional path can incur cloud charges and has **not** been live validated. Do not commit secrets.
 
+## Phase 2 — Bounded LLM-selected tools (feature branch)
+
+An optional model-driven agent selects one of three approved tools (FAQ lookup, synthetic balance read, or escalation), while deterministic policy gates and server-scoped data adapters retain authority. This is **not autonomous planning** and live Azure behavior has not been verified. [Implementation, examples, tradeoffs and security limitations](docs/phase-02-bounded-agent.md).
+
+```powershell
+# Offline fake-model safety tests
+.\\.venv\\Scripts\\python.exe -m unittest tests.test_bounded_agent -v
+# Optional live Azure inference; configure .env first (may incur charges)
+.\\.venv\\Scripts\\python.exe -m src.support_agent.cli --agent --azure --message "What are your hours?"
+```
+
 ## Architecture decisions and tradeoffs
 
 | Decision | Why | Accepted cost / limitation |
