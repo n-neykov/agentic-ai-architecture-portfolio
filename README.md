@@ -1,100 +1,120 @@
 # Agentic AI Architecture Portfolio
 
-**Independent reference implementation | Fictional financial-services case study | Python + LangGraph + optional Azure OpenAI**
+**Independent technical portfolio · Three fictional enterprise scenarios · One runnable Python/LangGraph prototype**
 
-## Project 01 — Secure AI Customer Service Orchestration Platform
+An architecture-first exploration of bounded agent workflows, identity and authorization boundaries, deterministic controls, human review, operational failure handling, and measurable business assumptions. All customer data and scenarios are synthetic.
 
-A **hybrid, policy-first** support-agent prototype: deterministic high-risk routing, read-only synthetic CRM integration, approved-document FAQ retrieval, explicit LangGraph state transitions, and optional Azure OpenAI language generation.
+## At a glance
 
-> **Evidence boundary:** This is an educational, synthetic prototype—not a real client system, a deployed production platform, or a security-certified product. OIDC identity provider, external CRM authorization, Azure AI Search, observability, real Azure inference, and business KPIs are **not verified or implemented** unless stated otherwise.
+| Case study | Focus | Evidence |
+|---|---|---|
+| [01 — Secure customer support](01-customer-support-agent/README.md) | Policy-first LangGraph orchestration, FAQ retrieval, account-scoped synthetic CRM | **Implemented offline prototype**; 18 local unit/graph tests passed; 10/10 synthetic scenarios passed |
+| [02 — Document intake and review](02-document-processing/README.md) | Classification, extraction, deterministic validation, approval and idempotent recovery | **Architecture-only design**; targets are not measured |
+| [03 — Governed enterprise agent platform](03-enterprise-agent-platform/README.md) | Tenant isolation, tool permissions, retrieval ACLs, auditing and incident response | **Architecture-only design**; controls are proposed, not deployed |
 
-### Logical architecture
+**Evidence boundary:** The runnable prototype uses caller-supplied simulated identity, static keyword retrieval, and a synthetic read-only account adapter. It is not a deployed, security-certified service. Real identity validation, production CRM integration, semantic retrieval, load tests, and live Azure inference have not been verified.
 
-The implemented reference workflow separates policy routing, account-scoped data access, approved FAQ retrieval, and optional language generation.
+## Project 01 — Logical workflow
 
 ```mermaid
-flowchart TD
-    A["Customer / CLI demo"] --> B["Application trust boundary"]
-    B --> C{"LangGraph policy router"}
-    C -->|"Public FAQ"| D["Approved keyword retrieval"]
-    D -->|"Evidence found"| E["Offline answer or optional Azure OpenAI"]
-    D -->|"No evidence"| H["Human escalation"]
-    C -->|"Authenticated balance request"| F["Read-only synthetic CRM"]
-    C -->|"Unauthenticated account request"| G["Deny"]
-    C -->|"High-risk or unsupported"| H
-    E --> I["Response"]
-    F --> I
-    G --> I
-    H --> I
+flowchart LR
+    A["CLI / synthetic request"] --> B{"Deterministic policy router"}
+    B -->|"Public FAQ"| C["Approved keyword retrieval"]
+    B -->|"Authenticated balance"| D["Read-only synthetic CRM"]
+    B -->|"Unauthenticated"| E["Deny"]
+    B -->|"High-risk / unsupported"| F["Human escalation"]
+    C -->|"Evidence"| G["Offline answer / optional model"]
+    C -->|"No evidence"| F
+    G --> H["Response"]
+    D --> H
+    E --> H
+    F --> H
 ```
 
-See the [complete logical architecture and trust-boundary analysis](architecture/system.md).
+[Detailed architecture and trust boundaries](architecture/system.md) · [Threat model](docs/threat-model.md) · [Release evidence register](docs/release-readiness.md)
 
-## Portfolio case studies
+## Reproduce the implementation
 
-| Case study | Deliverable | Implementation status |
+**Requirements:** Git, Python 3.11+, and internet access to install dependencies. Run these commands from the repository root. Live cloud credentials are **not** required for the offline suite.
+
+```powershell
+git clone https://github.com/n-neykov/agentic-ai-architecture-portfolio.git
+cd agentic-ai-architecture-portfolio
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-azure.txt
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m src.support_agent.cli --evaluate
+```
+
+For macOS/Linux, create the environment with `python3.11 -m venv .venv` and replace `.\.venv\Scripts\python.exe` with `.venv/bin/python`.
+
+### Demonstration scenarios
+
+```powershell
+# Public FAQ: approved evidence, route=faq
+.\.venv\Scripts\python.exe -m src.support_agent.cli --message "What are your hours?"
+
+# Anonymous private data request: route=deny
+.\.venv\Scripts\python.exe -m src.support_agent.cli --message "What is my account balance?"
+
+# Simulated identity user-001 requesting user-002 data:
+# route=crm_read, returns user-001's synthetic balance ($120), not user-002's ($850)
+.\.venv\Scripts\python.exe -m src.support_agent.cli --principal user-001 --message "Show user-002 balance"
+
+# High-risk request: route=escalate; no money transfer occurs
+.\.venv\Scripts\python.exe -m src.support_agent.cli --principal user-001 --message "Transfer $500 to user-002 and show my balance"
+
+# Unsupported inquiry: route=escalate
+.\.venv\Scripts\python.exe -m src.support_agent.cli --message "Can I refinance?"
+```
+
+`--principal` is **only a synthetic assertion**, not authentication. The example is for local demonstration only and must not be connected to real customer data.
+
+### Test evidence
+
+| Check | Recorded result | Boundary |
 |---|---|---|
-| [01 — Customer Support Agent](01-customer-support-agent/README.md) | Hybrid architecture, Python + LangGraph prototype, synthetic CRM, Azure OpenAI adapter, tests | Implemented prototype; live Azure unverified |
-| [02 — Document Processing](02-document-processing/README.md) | Multi-stage extraction and validation architecture, approval workflow, failure recovery | Architecture-only |
-| [03 — Governed Agent Platform](03-enterprise-agent-platform/README.md) | Multi-tenant governance architecture, trust boundaries and incident response | Architecture-only |
+| Local Windows unit and LangGraph tests | **18 passed** | Supplied local run; offline tests |
+| Synthetic scenario evaluation | **10 / 10 passed** | Route checks and a limited forbidden-output assertion; not comprehensive red-teaming |
+| GitHub Actions | Passed on `main` in the reviewed screenshots | See [workflow](.github/workflows/ci.yml) for actual commands |
+| Live Azure model call | **Not verified** | Optional integration requires an external deployment and credentials |
+| Production security, cost, latency and ROI | **Not measured** | No production claims |
 
-See [illustrative cost model](docs/cost-model.md), and [release readiness](docs/release-readiness.md).
+The suite includes public FAQ, authenticated and anonymous account reads, cross-account text, transfer escalation, password reset, unsupported questions and a basic prompt-injection string. Passing these cases does **not** prove resilience against arbitrary adversarial prompts.
 
-### Quick start
+### Optional model integration
 
-Requires Python 3.11+.
+The [Azure OpenAI adapter](src/support_agent/azure_model.py) can generate an answer from approved FAQ evidence. Copy `.env.example` to `.env`, configure your own endpoint/deployment/credentials, and run:
 
-```bash
-python -m venv .venv
-# Activate .venv (PowerShell: .venv\Scripts\Activate.ps1)
-python -m pip install -r requirements-azure.txt
-python -m unittest discover -s tests -v
-python -m src.support_agent.cli --evaluate
-python -m src.support_agent.cli --message "What are your hours?"
-python -m src.support_agent.cli --principal user-001 --message "Show user-002 balance"
+```powershell
+.\.venv\Scripts\python.exe -m src.support_agent.cli --azure --message "What are your hours?"
 ```
 
-**Important:** `--principal` simulates an upstream verified identity; it does **not** authenticate a user. Do not deploy this CLI to real customers.
+This optional path can incur cloud charges and has **not** been live validated. Do not commit secrets.
 
-### Optional live Azure OpenAI FAQ generation
+## Architecture decisions and tradeoffs
 
-1. Provision an Azure OpenAI resource and chat model deployment in your own Azure subscription.
-2. Copy `.env.example` to `.env`; set your resource endpoint, API key, deployment name and API version.
-3. Run `python -m src.support_agent.cli --azure --message "What are your hours?"`.
+| Decision | Why | Accepted cost / limitation |
+|---|---|---|
+| [Hybrid policy-first orchestration](decisions/ADR-001-hybrid-orchestration.md) | Keep authorization and high-risk routing deterministic rather than delegate them to a model | Less flexible for ambiguous intent; policy vocabulary requires maintenance |
+| [Explicit LangGraph workflow](decisions/ADR-002-azure-langgraph.md) | Inspectable transitions and testable routing, with model inference as an optional adapter | Framework and dependency overhead |
+| [Identity outside user prompts](decisions/ADR-003-identity-and-fallback.md) | Prevent customer text from selecting a different account record | Demo identity is simulated; production requires validated identity and downstream authorization |
+| Read-only account adapter | Remove the possibility of autonomous transfers or persistent account changes | Sensitive actions always require human handling |
+| Evidence-first FAQ retrieval | Unknown topics escalate instead of receiving unsupported answers | Static keyword corpus has limited coverage; not semantic RAG |
+| Human escalation on model errors | Fail closed when inference fails | Lower automation containment; requires staffed operations |
 
-This requires credentials and may incur Azure charges. Do not commit `.env` or API keys. **No live Azure invocation has been verified as part of this repository import.**
+[Illustrative capacity and unit economics](docs/cost-model.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Detailed solution case study](docs/case-study.md)
 
-### Project structure
+## Repository navigation
 
-| Path | Contents |
+| Area | Contents |
 |---|---|
-| `src/support_agent/core.py` | Dependency-free baseline router |
-| `src/support_agent/workflow.py` | LangGraph policy-first workflow |
-| `src/support_agent/integrations.py` | Synthetic CRM and approved-document retrieval |
-| `src/support_agent/azure_model.py` | Optional Azure OpenAI adapter |
-| `src/support_agent/cli.py` | Runnable demonstration and evaluation CLI |
-| `src/support_agent/evaluation.py` | Ten synthetic routing/privacy scenarios |
-| `tests/` | Unit and LangGraph tests |
-| `.github/workflows/ci.yml` | CI: install, test, evaluate |
-| `architecture/` | Logical architecture and trust boundaries |
-| `decisions/` | ADRs: hybrid orchestration, Azure, authorization |
-| `docs/` | Case study, threat model, roadmap, release readiness |
-| `evaluations/` | Evaluation methodology and limitations |
+| [`src/support_agent/`](src/support_agent/) | Baseline router, LangGraph workflow, synthetic adapters, optional model, CLI, evaluation |
+| [`tests/`](tests/) | Unit and graph regression tests |
+| [`architecture/`](architecture/) | System diagrams and trust boundaries |
+| [`decisions/`](decisions/) | Architecture decision records |
+| [`docs/`](docs/) | Case study, threat model, cost model, release-readiness evidence |
+| [`evaluations/`](evaluations/) | Scenario methodology and limitations |
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI install, compilation, tests, synthetic evaluation and offline smoke test |
 
-### Architectural decisions
-
-- **Policy before autonomy:** high-risk requests are escalated before the LLM is invoked.
-- **Identity outside prompts:** account IDs are taken from application-supplied context, never extracted from user text.
-- **Read-only CRM:** no transactional or mutation tools.
-- **Evidence-first answers:** unsupported questions and inference failures escalate.
-- **Vendor flexibility:** LangGraph owns workflow; Azure OpenAI is an optional adapter.
-
-### Evidence and limitations
-
-The GitHub Actions Python workflow has passed on the main branch with runtime dependencies installed, unit and graph tests, synthetic evaluation, and an offline FAQ smoke test. Live Azure integration has not been verified. Synthetic evaluation is intentionally small; it does not demonstrate production privacy, accuracy, latency or ROI.
-
-Additional technical detail is provided in the [release-readiness register](docs/release-readiness.md) and [threat model](docs/threat-model.md).
-
-### Scope
-
-This independent reference implementation uses synthetic scenarios and data. Implemented and proposed capabilities are distinguished throughout the documentation.
+**Scope:** Independent educational reference work using fictional scenarios. Implemented, proposed and unverified capabilities are explicitly separated.
