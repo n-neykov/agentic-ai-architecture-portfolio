@@ -52,6 +52,28 @@ div[data-testid="stAlert"] {border-radius: 10px}
 .response {padding:17px 20px; border-radius:12px; border:1px solid #38546c; background:#172a3b}
 .response small {color:#9bc2e0}
 .note {font-size:.82rem; color:#aabbd0}
+.arch-heading {margin:18px 0 26px; max-width:850px}
+.arch-kicker {color:#70c9ed; font-size:.73rem; letter-spacing:.14em; font-weight:800; margin-bottom:9px}
+.arch-heading h3 {font-size:1.55rem; color:#f4f8ff; margin:0 0 8px}
+.arch-heading p {color:#b8cce0; font-size:.93rem; line-height:1.65; margin:0}
+.arch-node {display:flex; align-items:flex-start; gap:18px; padding:20px 23px; background:#17283a;
+ border:1px solid #42617c; border-left:4px solid #5aa9e2; border-radius:12px; min-height:105px}
+.arch-node.arch-warning {border-left-color:#e6ac63; background:#30271f}
+.arch-node.arch-success {border-left-color:#54c9aa}
+.arch-index {font-size:.76rem; font-weight:800; color:#9ddaff; background:#254059; border-radius:7px;
+ padding:8px 11px; white-space:nowrap}
+.arch-title {font-size:1.03rem; font-weight:750; color:#f1f7ff; margin-bottom:6px}
+.arch-detail {font-size:.88rem; color:#b7ccdf; line-height:1.6}
+.arch-connector {height:54px; display:flex; align-items:center; justify-content:center; flex-direction:column;
+ color:#a8bfd3; font-size:.73rem; font-weight:650; letter-spacing:.03em}
+.arch-line {height:14px; width:2px; background:#5d8bad}
+.arch-chevron {font-size:.8rem; color:#82b5db; line-height:1.1}
+.arch-outcome {padding:19px 21px; border:1px solid #3c766a; border-left:4px solid #57c9a5;
+ background:#152d2b; border-radius:11px; min-height:110px}
+.arch-outcome.arch-warning {border-color:#896749; border-left-color:#e6ad68; background:#302720}
+.arch-outcome strong {font-size:.99rem; color:#f1f7ff}
+.arch-outcome p {font-size:.84rem; color:#c2d2df; line-height:1.6; margin:7px 0 0}
+.arch-section-label {font-size:.76rem; color:#91b6d1; letter-spacing:.1em; font-weight:800; margin:22px 0 11px}
 </style>
 """, unsafe_allow_html=True)
 
@@ -65,6 +87,35 @@ def panel(step, title, detail, kind="neutral"):
 
 def arrow():
     st.markdown('<div class="flow-arrow">↓</div>', unsafe_allow_html=True)
+
+def architecture_stage(number, heading, detail, tone="neutral"):
+    """Readable, responsive architecture component with explicit trust-boundary cues."""
+    st.markdown(
+        f'<div class="arch-node arch-{safe(tone)}">'
+        f'<span class="arch-index">{safe(number)}</span>'
+        f'<div><div class="arch-title">{safe(heading)}</div>'
+        f'<div class="arch-detail">{safe(detail)}</div></div></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def architecture_connector(label=""):
+    caption = f'<span>{safe(label)}</span>' if label else ""
+    st.markdown(f'<div class="arch-connector"><div class="arch-line"></div>{caption}'
+                '<div class="arch-chevron">▼</div></div>', unsafe_allow_html=True)
+
+
+def architecture_outcome(title, detail, tone="success"):
+    st.markdown(f'<div class="arch-outcome arch-{safe(tone)}">'
+                f'<strong>{safe(title)}</strong><p>{safe(detail)}</p></div>',
+                unsafe_allow_html=True)
+
+
+def architecture_heading(kicker, title, description):
+    st.markdown(f'<div class="arch-heading"><div class="arch-kicker">{safe(kicker)}</div>'
+                f'<h3>{safe(title)}</h3><p>{safe(description)}</p></div>',
+                unsafe_allow_html=True)
+
 
 SCENARIOS = {
     "Public FAQ": ("What are your hours?", "Anonymous"),
@@ -326,33 +377,24 @@ if project.startswith("01"):
     with architecture_tab:
         st.subheader("System architecture")
         st.caption("Policy-controlled tool access. Model output cannot grant account permissions or execute financial transactions.")
-        st.graphviz_chart(r"""
-    digraph G {
-      rankdir=TB; bgcolor="transparent"; nodesep=0.48; ranksep=0.6;
-      graph [pad="0.2"];
-      node [shape=box style="rounded,filled" fillcolor="#1d3046" color="#53718e"
-            fontcolor="white" fontname="Arial" fontsize=13 margin="0.25,0.16"];
-      edge [color="#7894ad" arrowsize=0.7];
-      request [label="Customer Request\nSimulated Session Identity"];
-      policy [label="Policy & Authorization Gate"];
-      agent [label="Bounded AI Orchestration\nGPT-4.1 mini / LangGraph baseline"];
-      faq [label="Approved Knowledge\nPublic FAQs"];
-      account [label="Synthetic Account Data\nRead-only, identity-scoped"];
-      session [label="Session Information\nSimulated identity only"];
-      block [label="Deny or Escalate" fillcolor="#49312d" color="#9b625b"];
-      response [label="Customer Response"];
-      request -> policy;
-      policy -> agent [label="approved" fontcolor="#a8c8de"];
-      policy -> block [label="blocked" fontcolor="#a8c8de"];
-      agent -> faq;
-      agent -> account;
-      agent -> session;
-      agent -> block;
-      faq -> response;
-      account -> response;
-      session -> response;
-    }
-    """, use_container_width=True)
+        architecture_heading("TRUST BOUNDARIES / PROJECT 01", "Policy-first agent orchestration",
+                             "The application enforces request policy before optional model inference. Model decisions are constrained to allowlisted, read-only tools.")
+        architecture_stage("01", "Customer request + simulated session", "Untrusted message text and caller-selected demo principal. No verified sign-in.")
+        architecture_connector("request enters deterministic boundary")
+        architecture_stage("02", "Pre-inference policy gate", "High-risk operation screening, cross-account pattern checks and anonymous private-data denial.", "warning")
+        architecture_connector("only approved requests proceed")
+        architecture_stage("03", "Bounded agent execution", "GPT-4.1 mini chooses approved tools in live mode; the offline LangGraph baseline routes deterministically.")
+        architecture_connector("read-only capability boundary")
+        st.markdown('<div class="arch-section-label">AUTHORIZED DATA SOURCES</div>', unsafe_allow_html=True)
+        col_faq, col_balance, col_session = st.columns(3, gap="medium")
+        with col_faq:
+            architecture_outcome("Approved FAQ retrieval", f"{len(DOCUMENTS)} synthetic knowledge records with evidence IDs.")
+        with col_balance:
+            architecture_outcome("Scoped account read", "Synthetic balance adapter always uses the session principal.")
+        with col_session:
+            architecture_outcome("Session information", "Returns simulated caller identity without private account lookup.")
+        st.markdown('<div class="arch-section-label">SAFE TERMINATION</div>', unsafe_allow_html=True)
+        architecture_outcome("Deny / escalate", "Rejected policy decisions never reach the model; invalid tool decisions and outages fail closed.", "warning")
         st.markdown("#### Component responsibilities")
         st.table({
             "Component": ["Policy gate", "AI orchestration", "Knowledge source",
@@ -434,19 +476,25 @@ else:
                         except (ValueError, KeyError, PermissionError) as exc:
                             st.error(str(exc))
                 st.markdown("**Audit trail**")
-                st.dataframe(result["audit"], use_container_width=True, hide_index=True)
+                st.dataframe([{key: (value if value is not None else "—") for key, value in event.items()} for event in result["audit"]], use_container_width=True, hide_index=True)
                 st.download_button("Download synthetic processing evidence", json.dumps(result, indent=2),
                                    file_name="document-intake-evidence.json", mime="application/json")
         with architecture:
-            st.graphviz_chart("""digraph G {
-                rankdir=LR; bgcolor="transparent";
-                node [shape=box style="rounded,filled" fillcolor="#1d3046" fontcolor="white" color="#53718e"];
-                input [label="Synthetic Text Intake"]; classify [label="Type Classification"];
-                extract [label="Field Extraction + Line Evidence"]; validate [label="Schema + Vendor Rules"];
-                review [label="Simulated Human Review"]; stage [label="In-memory Staging"];
-                input -> classify -> extract -> validate; validate -> stage [label="valid"];
-                validate -> review [label="exception"]; review -> stage [label="approved"];
-            }""", use_container_width=True)
+            architecture_heading("EXECUTION FLOW / PROJECT 02", "Evidence-driven document intake",
+                                 "A staged document must pass explicit field and vendor rules. Sensitive bank details require simulated review.")
+            architecture_stage("01", "Synthetic text intake", "Select a sample or provide plain text; tenant ID and content hash establish in-memory idempotency.")
+            architecture_connector()
+            architecture_stage("02", "Classification + field extraction", "Recognize invoice, tax form or supplier agreement and record source-line provenance for each extracted field.")
+            architecture_connector()
+            architecture_stage("03", "Deterministic validation", "Check required fields, synthetic vendor registry, amounts, currency and dates. Bank-account details trigger review.", "warning")
+            st.markdown('<div class="arch-section-label">POLICY DECISION / TWO DISTINCT OUTCOMES</div>', unsafe_allow_html=True)
+            left_path, right_path = st.columns(2, gap="medium")
+            with left_path:
+                architecture_outcome("Validated → staged", "Valid, nonsensitive records enter the synthetic in-memory outbox. Replays return the existing workflow.")
+            with right_path:
+                architecture_outcome("Exception → review", "Invalid records need correction. Sensitive bank details require explicit named simulated approval before staging.", "warning")
+            st.markdown('<div class="arch-section-label">AUDITABILITY</div>', unsafe_allow_html=True)
+            architecture_stage("04", "Evidence + audit export", "Field-level line references, decision reasons, workflow ID and structured events can be exported as JSON.", "success")
             st.markdown("**Production gaps:** file upload validation, OCR, malware scanning, durable queue/state, real ERP integration, reviewer authentication, telemetry and cloud evaluation.")
     else:
         from src.enterprise_platform.governance import GovernedGateway, DEMO_PRINCIPALS, TOOLS
@@ -498,19 +546,22 @@ else:
                 st.download_button("Download audit events", json.dumps(gateway.audit, indent=2),
                                    file_name="synthetic-governance-audit.json", mime="application/json")
         with architecture:
-            st.graphviz_chart("""digraph G {
-                rankdir=LR; bgcolor="transparent";
-                node [shape=box style="rounded,filled" fillcolor="#1d3046" fontcolor="white" color="#53718e"];
-                request [label="Simulated Principal + Tool Request"];
-                policy [label="Verification / Tenant / Role Policy"];
-                registry [label="Allowlisted Tool Registry"];
-                approval [label="Approval Gate"];
-                data [label="Tenant-filtered Synthetic Records"];
-                deny [label="Deny or Require Approval"];
-                request -> policy; policy -> registry [label="allowed"];
-                policy -> deny [label="blocked"]; registry -> approval;
-                approval -> data [label="read"]; approval -> deny [label="write"];
-            }""", use_container_width=True)
+            architecture_heading("CONTROL PLANE / PROJECT 03", "Governed enterprise tool access",
+                                 "A default-deny policy checks identity assertions, tenant boundaries, tool registration and role permissions before returning synthetic data.")
+            architecture_stage("01", "Simulated principal + tool request", "The demo provides a subject, tenant, roles and verification flag; real OIDC/JWT validation is not implemented.")
+            architecture_connector("default-deny enforcement")
+            architecture_stage("02", "Tenant + role policy", "Reject unverified callers, cross-tenant requests and missing role permissions before data access.", "warning")
+            architecture_connector()
+            architecture_stage("03", "Allowlisted tool registry", f"{len(TOOLS)} registered capabilities spanning HR, finance and IT, including a payment-write approval example.")
+            architecture_connector("approval and action boundary")
+            st.markdown('<div class="arch-section-label">POLICY DECISION / CONTROLLED OUTCOMES</div>', unsafe_allow_html=True)
+            allowed, denied = st.columns(2, gap="medium")
+            with allowed:
+                architecture_outcome("Authorized read", "Only matching-tenant, matching-department synthetic records are returned.")
+            with denied:
+                architecture_outcome("Deny / approval required", "Unapproved requests stop. Even approved payment updates remain disconnected.", "warning")
+            st.markdown('<div class="arch-section-label">ACCOUNTABILITY</div>', unsafe_allow_html=True)
+            architecture_stage("04", "Auditable policy decisions", "In-memory events record request ID, subject, tenant, tool, decision and reason; exportable as JSON.", "success")
             st.markdown("**Production gaps:** verified OIDC/JWT, managed identities, centralized policy service, real agent runtime, durable approvals, redacted telemetry and deployed Azure services.")
     st.divider()
     st.caption("Independent enterprise AI portfolio · Functional synthetic offline prototype · Not production deployed")
