@@ -74,6 +74,39 @@ class GovernedGateway:
         return outcome
 
 
+    def execute_request(self, principal: Principal, message: str, requested_tenant: str,
+                        request_id: str = "demo-request", model=None) -> dict:
+        """Optional model routing, never model authorization or arbitrary arguments."""
+        # Reject unverified and cross-tenant requests before any model inference.
+        if not principal.verified or requested_tenant != principal.tenant:
+            result = self.execute(principal, "preflight_request", requested_tenant, request_id)
+            result["model_called"] = False
+            return result
+        if model is None:
+            raise ValueError("Natural-language routing requires a model")
+        from .azure_routing import select_tool
+        try:
+            selected = select_tool(message, model)
+        except (ValueError, RuntimeError, TimeoutError) as exc:
+            result = {"status": "denied", "reason": "model_routing_failed",
+                      "tool": None, "records": [], "model_called": True}
+            self.audit.append({"event": "tool_decision", "request_id": request_id,
+                               "subject": principal.subject, "tenant": principal.tenant,
+                               "tool": None, "status": "denied", "reason": result["reason"],
+                               "error_type": type(exc).__name__})
+            return result
+        if selected is None:
+            result = {"status": "denied", "reason": "unsupported_request",
+                      "tool": None, "records": [], "model_called": True}
+            self.audit.append({"event": "tool_decision", "request_id": request_id,
+                               "subject": principal.subject, "tenant": principal.tenant,
+                               "tool": None, "status": "denied", "reason": result["reason"]})
+            return result
+        result = self.execute(principal, selected, requested_tenant, request_id)
+        result["model_called"] = True
+        return result
+
+
 DEMO_PRINCIPALS = {
     "Unverified caller": Principal("guest", "tenant-a", ("finance_reader",), False),
     "HR reader · tenant A": Principal("hr-analyst", "tenant-a", ("hr_reader",), True),
