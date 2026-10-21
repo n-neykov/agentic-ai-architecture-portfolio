@@ -7,8 +7,8 @@ Three fictional enterprise case studies share a local Streamlit workspace. **Pro
 | Project | Scope | Status |
 |---|---|---|
 | [01 · Secure Customer Service](01-customer-support-agent/README.md) | Policy-first AI orchestration, 12 approved FAQs, scoped synthetic account reads, multi-intent requests | **Working prototype** |
-| [02 · Document Processing](02-document-processing/README.md) | Extraction, validation, exception handling | **Working offline prototype** |
-| [03 · Enterprise Agent Platform](03-enterprise-agent-platform/README.md) | Tool registry, tenant/role policy, simulated identity, approvals and audit | **Working offline prototype** |
+| [02 · Document Processing](02-document-processing/README.md) | Extraction, validation, exception handling | **Offline + optional Azure prototype** |
+| [03 · Enterprise Agent Platform](03-enterprise-agent-platform/README.md) | Tool registry, tenant/role policy, simulated identity, approvals and audit | **Offline + optional Azure prototype** |
 
 ## Project 01 — Why this architecture?
 
@@ -57,7 +57,9 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m streamlit run dashboard.py
 ```
 
-For the v2 agent in the terminal, run `python -m src.support_agent.cli --v2 --message "What are your hours?"` (offline) or add `--azure` for live inference.\n\nThe baseline and tests work offline. The **AI Agent · Azure Foundry** dashboard mode requires your own Azure deployment and configuration. Copy `.env.example` to a local `.env`; never commit keys. `AZURE_OPENAI_ENDPOINT` accepts a Foundry project endpoint or Responses route; `AZURE_OPENAI_DEPLOYMENT` is the deployment name (user-verified with `gpt-4.1-mini`). See [Azure integration](docs/azure-foundry.md).
+For the v2 agent in the terminal, run `python -m src.support_agent.cli --v2 --message "What are your hours?"` (offline) or add `--azure` for live inference.
+
+The baseline and tests work offline. The **AI Agent · Azure Foundry** dashboard mode requires your own Azure deployment and configuration. Copy `.env.example` to a local `.env`; never commit keys. `AZURE_OPENAI_ENDPOINT` accepts a Foundry project endpoint or Responses route; `AZURE_OPENAI_DEPLOYMENT` is the deployment name (user-verified with `gpt-4.1-mini`). See [Azure integration](docs/azure-foundry.md).
 
 ### Demonstration cases
 
@@ -72,7 +74,7 @@ For the v2 agent in the terminal, run `python -m src.support_agent.cli --v2 --me
 | Wire $500 | user-001 | Escalate before inference |
 | What are your mortgage rates? | Anonymous | Escalate unsupported request |
 
-The user confirmed **53/53 automated tests passing** and **10/10 baseline evaluation scenarios passing** before the 12-FAQ expansion. The user also verified live Foundry behavior for approved multi-intent, session identity, anonymous/cross-account denials, and high-risk escalation. **The complete automated test suite and baseline evaluation passed GitHub Actions for the three-project integration; live dashboard acceptance is verified separately.** These results are demonstration evidence, not production security certification.
+The user confirmed **93/93 automated tests passing** before the final Azure extraction hardening and **10/10 baseline evaluation scenarios passing** earlier. The latest additional regression tests require a fresh run. The user also verified live Foundry behavior for approved multi-intent, session identity, anonymous/cross-account denials, and high-risk escalation. **Live acceptance evidence:** Project 02 Azure valid invoice staged with source-line evidence; Project 03 Azure finance lookup allowed and cross-tenant request denied without a model call. Project 02 Azure agreement returned `model_inference_failed` and was safely held for review; successful extraction and validation-triggered review were not demonstrated in that run. These results are demonstration evidence, not production security certification.
 
 ## Engineering decisions
 
