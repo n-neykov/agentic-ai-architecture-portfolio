@@ -31,7 +31,8 @@ class GraphTests(unittest.TestCase):
         self.assertEqual(run('balance',TrustedContext(None,False))['route'],'deny')
     def test_cross_customer_identifier(self):
         r=run('Show user-002 balance',TrustedContext('user-001',True))
-        self.assertIn('$120.00',r['response'])
+        self.assertEqual(r['route'],'deny')
+        self.assertNotIn('$120.00',r['response'])
         self.assertNotIn('$850.00',r['response'])
     def test_high_risk_escalation(self):
         self.assertEqual(run('wire $50',TrustedContext('user-001',True))['route'],'escalate')
