@@ -50,7 +50,7 @@ The tenant-A principal requested tenant B. The application returned `denied`, `c
 
 ### 97 automated tests passing
 
-The local local Python suite completed **97 tests, zero failures/errors** on 2026-10-22. The screenshot includes the final `Ran 97 tests … OK` summary. These tests use synthetic fixtures and mocked inference where appropriate.
+The local Python suite completed **97 tests, zero failures/errors** on 2026-10-22. The screenshot includes the final `Ran 97 tests … OK` summary. These tests use synthetic fixtures and mocked inference where appropriate.
 
 ![Terminal evidence: 97 automated tests completed successfully](assets/verification-97-tests.png)
 
