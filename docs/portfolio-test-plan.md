@@ -47,7 +47,7 @@ Both offline and mocked-Azure tests submit an agreement with `Bank Account: inva
 
 ## Sign-off
 
-**User-verified 2026-10-22:** Terminal screenshots show **97/97 tests passing** after the malformed-bank regex/fixture fixes, and **10/10 baseline scenarios passing**. Project 01–03 live Azure screenshots show the six expected success/denial/review behaviors. These are local user-run observations; CI status, compileall and final architecture-tab rendering remain separate checks. Capture screenshots later from the same final commit. Never enter real customer/supplier records or commit credentials.
+**locally verified 2026-10-22:** Terminal screenshots show **97/97 tests passing** after the malformed-bank regex/fixture fixes, and **10/10 baseline scenarios passing**. Project 01–03 live Azure screenshots show the six expected success/denial/review behaviors. These are local local observations; CI status, compileall and final architecture-tab rendering remain separate checks. Capture screenshots later from the same final commit. Never enter real customer/supplier records or commit credentials.
 
 ## Optional live Azure Foundry acceptance tests (Projects 02 and 03)
 
