@@ -52,7 +52,7 @@ The CLI exposes legacy/baseline and bounded-agent paths; the **Agent v2** experi
 
 ## Validation and limitations
 
-The portfolio-wide suite most recently reported **97 tests with two failures** in newly added Project 02 malformed-bank fixtures; escaping corrections have since been committed and require rerun. The **10/10 synthetic baseline evaluation** was confirmed previously, not on the final revision. Live Foundry demonstrations were user-observed, not benchmarked. See [portfolio evidence](../README.md#engineering-evidence).
+The user supplied screenshots on **2026-10-22** showing **97/97 portfolio-wide automated tests passing** (including the corrected malformed-bank regressions) and **10/10 deterministic baseline evaluation scenarios passing**. These are local run results, not independently verified GitHub Actions results. Live Foundry demonstrations were user-observed, not benchmarked. See [portfolio evidence](../README.md#engineering-evidence).
 
 The demo identity is caller-selected and **not authenticated**. FAQ retrieval is keyword-based, not Azure AI Search or semantic RAG. There is no production CRM, staffed review queue, real transaction tool, production observability, or measured cost/SLA.
 
