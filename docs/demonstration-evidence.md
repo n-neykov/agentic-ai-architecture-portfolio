@@ -2,7 +2,7 @@
 
 **Synthetic reference implementations · Local acceptance demonstrations · 2026-10-22**
 
-The screenshots below are actual user-captured Streamlit executions and terminal outputs. They demonstrate specific approved, denied and review paths; they are **not** claims of production identity assurance, model accuracy, security certification, or availability.
+The screenshots below are actual locally captured Streamlit executions and terminal outputs. They demonstrate specific approved, denied and review paths; they are **not** claims of production identity assurance, model accuracy, security certification, or availability.
 
 ## Project 01 · Secure Customer Service
 
@@ -50,7 +50,7 @@ The tenant-A principal requested tenant B. The application returned `denied`, `c
 
 ### 97 automated tests passing
 
-The user-run local Python suite completed **97 tests, zero failures/errors** on 2026-10-22. The screenshot includes the final `Ran 97 tests … OK` summary. These tests use synthetic fixtures and mocked inference where appropriate.
+The local local Python suite completed **97 tests, zero failures/errors** on 2026-10-22. The screenshot includes the final `Ran 97 tests … OK` summary. These tests use synthetic fixtures and mocked inference where appropriate.
 
 ![Terminal evidence: 97 automated tests completed successfully](assets/verification-97-tests.png)
 
