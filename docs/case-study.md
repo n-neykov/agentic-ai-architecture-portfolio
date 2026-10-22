@@ -25,7 +25,7 @@ The language model assists with bounded decisions but never becomes the source o
 
 ## Observed demonstration evidence
 
-Screenshots supplied **2026-10-22** show **97/97 portfolio-wide tests passing** and **10/10 deterministic baseline scenarios passing** following malformed-bank regression fixes. Live Foundry demonstrations include approved multi-intent and pre-inference account-scope denial. Results are user-executed local evidence, not independently reproduced CI or production metrics.
+Captured screenshots **2026-10-22** show **97/97 portfolio-wide tests passing** and **10/10 deterministic baseline scenarios passing** following malformed-bank regression fixes. Live Foundry demonstrations include approved multi-intent and pre-inference account-scope denial. Results are locally executed local evidence, not independently reproduced CI or production metrics.
 
 ## Hypothetical pilot targets — not achieved metrics
 
