@@ -61,7 +61,7 @@ class AzureDocumentTests(unittest.TestCase):
         self.assertEqual(result["issues"], ["model_inference_failed"])
 
     def test_azure_malformed_bank_details_cannot_stage(self):
-        text = "Supplier Agreement\\nVendor ID: VEN-002\\nEffective Date: 2026-11-01\\nBank Account: invalid value!"
+        text = "Supplier Agreement\nVendor ID: VEN-002\nEffective Date: 2026-11-01\nBank Account: invalid value!"
         model = FakeModel({"document_type": "supplier_agreement", "fields": {
             "vendor_id": "VEN-002", "effective_date": "2026-11-01"}})
         engine = IntakeEngine()
