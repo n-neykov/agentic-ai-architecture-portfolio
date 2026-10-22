@@ -41,9 +41,13 @@ Verify tenant-specific workflow IDs and downloadable JSON.
 
 Verify audit events and JSON export. These are simulated identity claims, not real IAM tests.
 
+## Additional security regression: malformed bank-account label
+
+Both offline and mocked-Azure tests submit an agreement with `Bank Account: invalid value!`. Expected: `needs_review` with `invalid_bank_account_format`; simulated approval must raise `ValueError`, and staged count remains zero. These are **automated synthetic fixtures**, not a live Azure model accuracy test.
+
 ## Sign-off
 
-The integrated three-project PR has been merged; rerun the regression suite after presentation changes and verify dashboard smoke tests. Capture screenshots later from the same final commit. Never enter real customer/supplier records or commit credentials.
+The latest reported suite discovered **97 tests and failed two malformed-bank fixtures**. Regex and fixture escaping corrections have since been committed. Rerun the suite on the latest `main`; do not claim a final pass count until confirmed. Verify the dashboard smoke tests and actual GitHub Actions status. Capture screenshots later from the same final commit. Never enter real customer/supplier records or commit credentials.
 
 ## Optional live Azure Foundry acceptance tests (Projects 02 and 03)
 
