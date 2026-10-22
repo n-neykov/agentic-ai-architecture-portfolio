@@ -56,11 +56,11 @@ A finance-reader identity belonging to tenant A requests tenant B. The applicati
 
 | Evidence | What it establishes | Verification status |
 |---|---|---|
-| **97/97 automated tests passed (user-verified, 2026-10-22)** | Python unit, workflow and mocked-model regression coverage | Screenshot evidence shows **Ran 97 tests … OK**, including malformed-bank regressions; local run, not independently reproduced in CI. |
+| **97/97 automated tests passed (locally verified, 2026-10-22)** | Python unit, workflow and mocked-model regression coverage | Screenshot evidence shows **Ran 97 tests … OK**, including malformed-bank regressions; local run, not independently reproduced in CI. |
 | **10-scenario offline evaluation** | Deterministic Project 01 routing against known synthetic scenarios | Screenshot evidence shows **10/10 passed** in the offline baseline evaluation |
-| **Live Azure demonstration: P1** | Bounded multi-intent support, synthetic own-account reads, cross-account and high-risk preflight | User-observed, not an Azure model benchmark |
-| **Live Azure demonstration: P2** | Invoice staged with evidence; supplier agreement extracted with evidence and held for bank-detail review | User-observed, not measured extraction accuracy |
-| **Live Azure demonstration: P3** | Finance tool allowed for tenant A; tenant B request denied with `model_called=false` | User-observed, not verified production IAM |
+| **Live Azure demonstration: P1** | Bounded multi-intent support, synthetic own-account reads, cross-account and high-risk preflight | observed in local live-Azure demonstrations, not an Azure model benchmark |
+| **Live Azure demonstration: P2** | Invoice staged with evidence; supplier agreement extracted with evidence and held for bank-detail review | observed in local live-Azure demonstrations, not measured extraction accuracy |
+| **Live Azure demonstration: P3** | Finance tool allowed for tenant A; tenant B request denied with `model_called=false` | observed in local live-Azure demonstrations, not verified production IAM |
 | **GitHub Actions** | Compile, unit tests, deterministic evaluation and offline CLI smoke test on pushes/PRs | [Inspect actual workflow results](https://github.com/n-neykov/agentic-ai-architecture-portfolio/actions/workflows/ci.yml); badge is live, not a claimed result |
 
 The test count is not a performance score. Tests use synthetic fixtures and fake models; **live Azure acceptance and automated regression coverage are separate forms of evidence**.
