@@ -13,7 +13,7 @@ A separate `tests/test_knowledge_base.py` covers the 12 synthetic FAQ topics, ev
 
 ## Recorded evidence
 
-The user confirmed 53 passing tests and 10/10 baseline scenarios **before the knowledge-base expansion**. They also confirmed live GPT-4.1 mini scenarios including multi-intent, session identity, own-account reads and cross-account denials. The expanded suite requires rerunning; no updated pass count is claimed.
+The user previously confirmed **10/10 baseline scenarios**, and live GPT-4.1 mini multi-intent, session identity, own-account and cross-account demonstrations. The latest reported repository-wide test run discovered 97 tests and had two failures in Project 02 malformed-bank tests. Those fixture/regex escaping errors were corrected afterward, but the final suite result is not yet confirmed. This is not a live-model accuracy evaluation.
 
 ## Proposed enterprise release gates — not achieved
 
