@@ -1,4 +1,4 @@
-# Portfolio final technical review — 2026-10-21
+# Portfolio technical review — updated 2026-10-22
 
 **Scope:** Three synthetic Python/Streamlit reference projects, shared Azure Foundry adapter, architecture READMEs, threat model, dashboard, and automated regression tests. Reviewed source files through the connected GitHub repository. This is a targeted code and documentation review, **not** a complete line-by-line attestation of every file, a credential-history scan, a production penetration test, or a local execution of the latest commit.
 
@@ -27,7 +27,7 @@
 4. **P2 review:** A named reviewer is a simulated string. In-memory state and approvals are not durable or authenticated.
 5. **P3 identity:** `verified=True` is a synthetic flag. Tenant and role enforcement is implemented in Python against synthetic data, not at an external data store or API gateway.
 6. **P3 model role:** GPT selects one registered tool; the model cannot execute the tool or grant permission. A payment-write example is approval-gated but never connected to a write API.
-7. **Tests:** Automated tests exercise local fixtures and mocked model decisions. User-observed live Azure acceptance is separate. The latest test additions must be rerun locally or in CI.
+7. **Tests:** Automated tests exercise local fixtures and mocked model decisions. User-observed live Azure acceptance is separate. The latest reported 97-test run failed two newly added malformed-bank cases. Escaping fixes were committed afterward; rerun before asserting 97/97.
 8. **Security:** `.gitignore` excludes `.env` and credential-like files. This review did not independently scan all Git history or certify absence of secrets in prior commits.
 9. **Observability:** Local audit arrays and downloadable JSON are demonstration artifacts, not immutable centralized audit trails or end-to-end distributed traces.
 10. **Performance:** No measured accuracy, cost, SLA, latency percentile, or production availability should be presented as achieved.
@@ -44,5 +44,7 @@ git pull origin main
 ```
 
 Verify the Project 02 malformed bank-account fixture cannot stage or be approved, and confirm the three project architecture tabs render at normal browser zoom. Check GitHub Actions for the exact final SHA. Screenshots should identify the prototype as synthetic and avoid showing `.env` or secrets.
+
+**Verification update:** The user reported 97 discovered tests, with two failures caused by escaped newline fixtures and a doubly escaped bank-label regex. Corrections were committed on `main`; a subsequent passing result has not yet been provided.
 
 **Disposition:** Appropriate for an enterprise architecture interview **once the final revision's tests and UI smoke checks pass**. Not production ready.
