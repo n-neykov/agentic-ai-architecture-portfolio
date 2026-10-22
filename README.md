@@ -14,7 +14,7 @@ An independent architecture and engineering portfolio exploring a practical ente
 | **[02 · Intelligent Document Processing](02-document-processing/README.md)** | How can AI-assisted extraction remain verifiable and reviewable? | Offline extraction or Azure-proposed fields, exact labeled-line evidence, validation, in-memory staging | Bank-account data triggers simulated human review |
 | **[03 · Governed Enterprise Agent Platform](03-enterprise-agent-platform/README.md)** | How do we separate model tool selection from execution authority? | Registered synthetic tools, role/tenant checks, optional Azure routing, simulated approvals | Cross-tenant Azure requests are denied before model invocation |
 
-**Start here:** [Project 01 architecture](architecture/system.md) · [Project 02 decision flow](02-document-processing/README.md#implemented-workflow) · [Project 03 governance flow](03-enterprise-agent-platform/README.md#implemented-architecture) · [Technical review and residual risks](docs/final-technical-review.md)
+**[Demonstration evidence](docs/demonstration-evidence.md)** · **Start here:** [Project 01 architecture](architecture/system.md) · [Project 02 decision flow](02-document-processing/README.md#implemented-workflow) · [Project 03 governance flow](03-enterprise-agent-platform/README.md#implemented-architecture) · [Technical review and residual risks](docs/final-technical-review.md)
 
 ## Engineering evidence
 
