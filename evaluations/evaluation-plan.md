@@ -13,7 +13,7 @@ A separate `tests/test_knowledge_base.py` covers the 12 synthetic FAQ topics, ev
 
 ## Recorded evidence
 
-On **2026-10-22**, the user supplied terminal screenshots confirming **97/97 tests passing** and **10/10 baseline scenarios passing** after the Project 02 malformed-bank fixture/regex corrections. Separate live Azure screenshots show multi-intent, account-scope denial, invoice extraction/review and governed tool routing. The screenshots do not establish cloud model accuracy or a verified CI run. This is not a live-model accuracy evaluation.
+On **2026-10-22**, Local terminal screenshots confirm **97/97 tests passing** and **10/10 baseline scenarios passing** after the Project 02 malformed-bank fixture/regex corrections. Separate live Azure screenshots show multi-intent, account-scope denial, invoice extraction/review and governed tool routing. The screenshots do not establish cloud model accuracy or a verified CI run. This is not a live-model accuracy evaluation.
 
 ## Proposed enterprise release gates — not achieved
 
