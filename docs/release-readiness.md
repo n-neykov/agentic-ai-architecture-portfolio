@@ -9,11 +9,11 @@
 | Azure Foundry GPT-4.1 mini Responses API | **Live validated by user** | Working local project endpoint/deployment; no performance certification |
 | Synthetic read-only account adapter | Implemented | Session-scoped fixture balances; demo identity is unverified |
 | Cross-account and high-risk screening | Implemented for known patterns | User-tested zero-model-call denials; not comprehensive security assurance |
-| Approved FAQ knowledge base | **12 records implemented** | 12-topic knowledge base implemented; latest suite needs rerun |
-| Baseline evaluation | **10 scenarios** | User confirmed 10/10 previously; rerun on final commit; deterministic baseline only |
-| Unit and workflow tests | **93 passed before final Azure hardening** | Additional P2 safety tests committed; latest suite requires rerun |
-| Dashboard and architecture visualization | Implemented | Two modes; screenshots still to be captured from final version |
-| CI | Configured | Workflow runs compile, tests and baseline evaluation; new branch run not independently confirmed |
+| Approved FAQ knowledge base | **12 records implemented** | 12 synthetic FAQ records; latest portfolio-wide suite requires rerun |
+| Baseline evaluation | **10 scenarios** | Previously reported 10/10; rerun on final commit; deterministic baseline only |
+| Unit and workflow tests | **97 discovered; final result pending** | Most recent run had 2 Project 02 fixture failures; escaping fixes committed afterward |
+| Dashboard and architecture visualization | Implemented | Two Project 01 modes; final visual smoke check not independently verified |
+| CI | Configured | Workflow defined for pushes/PRs; inspect the latest GitHub Actions run before claiming success |
 | Verified OIDC/Entra identity | Not implemented | Production blocker |
 | Real CRM/tenant-level authorization | Not implemented | Production blocker |
 | Semantic RAG / Azure AI Search | Not implemented | Potential future enhancement |
