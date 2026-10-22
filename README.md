@@ -6,6 +6,42 @@
 
 An independent architecture and engineering portfolio exploring a practical enterprise design question: **where should an LLM make decisions, and where must deterministic software retain authority?** The projects share one local Streamlit dashboard and demonstrate bounded model-assisted routing, explicit policy decisions, source-grounded document intake, and tenant-aware tool governance. They are **not production deployments**.
 
+## See the systems in action
+
+The images below are **actual local Streamlit executions** using synthetic identities, documents and records—not design mockups. [View all eight execution and verification results](docs/demonstration-evidence.md).
+
+### 01 · Bounded AI customer support
+
+**Azure GPT-4.1 mini · Approved multi-intent execution · Two completed model calls**
+
+A fictional customer asks for business hours and their own balance. Deterministic policy permits the request, and the model nominates two allowed read-only tools. The dashboard shows the selected tools, FAQ evidence and synthetic $120 balance.
+
+[![Project 01 Azure multi-intent execution, including tool decisions and evidence](docs/assets/p01-azure-multi-intent.png)](docs/demonstration-evidence.md#project-01--secure-customer-service)
+
+[View the cross-account denial with zero model calls](docs/demonstration-evidence.md#cross-account-request-denied-before-inference) · [Project architecture](01-customer-support-agent/README.md)
+
+### 02 · Evidence-grounded document intake
+
+**Azure-assisted extraction · Deterministic validation · Human-review gate**
+
+A synthetic supplier agreement yields source-line-grounded fields but is held at `needs_review` because it contains bank-account details. No ERP update or external write occurs.
+
+[![Project 02 bank-detail agreement held for review with extracted fields and source-line evidence](docs/assets/p02-bank-details-review.png)](docs/demonstration-evidence.md#project-02--intelligent-document-processing)
+
+[View the successfully staged invoice](docs/demonstration-evidence.md#valid-synthetic-invoice-staged) · [Project architecture](02-document-processing/README.md)
+
+### 03 · Governed enterprise tool execution
+
+**Synthetic tenant isolation · Server-side authorization · Pre-inference denial**
+
+A finance-reader identity belonging to tenant A requests tenant B. The application denies the request with `cross_tenant_access` and `model_called=False`, without returning tenant-B records.
+
+[![Project 03 cross-tenant access denied before model invocation](docs/assets/p03-cross-tenant-denied.png)](docs/demonstration-evidence.md#project-03--governed-enterprise-agent-platform)
+
+[View the authorized tenant-A tool execution](docs/demonstration-evidence.md#authorized-tenant-a-read) · [Project architecture](03-enterprise-agent-platform/README.md)
+
+---
+
 ## Explore the projects
 
 | Project | Architectural question | What runs | Demonstrated decision |
@@ -82,15 +118,9 @@ py -3.11 -m venv .venv
 
 To enable optional live inference, copy `.env.example` to a private `.env`, configure your own Foundry endpoint/key/deployment and select an Azure mode in the UI. **Never commit credentials or submit real customer or supplier data.** Live inference may incur charges. See [Azure configuration](docs/azure-foundry.md) and the [complete acceptance plan](docs/portfolio-test-plan.md).
 
-## Suggested five-minute demonstration
+## Further technical documentation
 
-1. **Project 01:** Run a synthetic FAQ + own balance in Azure mode; switch to a cross-account request and show the pre-inference denial.
-2. **Project 02:** Stage a valid synthetic invoice; submit the agreement with bank details and show exact line evidence plus `needs_review`.
-3. **Project 03:** Permit a tenant-A finance lookup, then request tenant B and show `cross_tenant_access` with no model call.
-4. **Architecture:** Open the project-specific Mermaid diagrams and explain why authorization, review and tool arguments remain outside the LLM.
-5. **Engineering evidence:** Open the GitHub Actions run, automated tests and baseline evaluation; distinguish actual passing results from illustrative targets.
-
-[Dashboard walkthrough](docs/dashboard.md) · [Project 01 case study](docs/case-study.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Threat model](docs/threat-model.md) · [Architecture decisions](decisions/)
+[Full demonstration gallery](docs/demonstration-evidence.md) · [Dashboard guide](docs/dashboard.md) · [Project 01 case study](docs/case-study.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Threat model](docs/threat-model.md) · [Architecture decisions](decisions/) · [Technical review](docs/final-technical-review.md)
 
 ## Production boundaries
 
