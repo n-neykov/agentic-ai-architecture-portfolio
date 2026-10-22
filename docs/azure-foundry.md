@@ -4,7 +4,7 @@
 
 ## Verified behavior and scope
 
-The user successfully invoked the **GPT-4.1 mini** deployment through a Microsoft/Azure AI Foundry **project Responses API** endpoint. Live dashboard testing covered approved FAQ answers, own-account synthetic reads, multi-intent responses, simulated session identity, pre-inference cross-account denials, and high-risk escalation. These are user-observed demonstrations, not provider-side certification or production benchmarks.
+Live tests successfully invoked the **GPT-4.1 mini** deployment through a Microsoft/Azure AI Foundry **project Responses API** endpoint. Live dashboard testing covered approved FAQ answers, own-account synthetic reads, multi-intent responses, simulated session identity, pre-inference cross-account denials, and high-risk escalation. These are observed in local live-Azure demonstrations demonstrations, not provider-side certification or production benchmarks.
 
 ## Local configuration
 
