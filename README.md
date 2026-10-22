@@ -43,10 +43,10 @@ The test count is not a performance score. Tests use synthetic fixtures and fake
 
 ```mermaid
 flowchart LR
-  U["Synthetic input and demo identity"] --> G["Deterministic policy / scope checks"]
+  U["Synthetic request or document"] --> G["Input checks and project-specific guards"]
   G -->|Blocked| D["Deny, escalate or review"]
-  G -->|Eligible| M["Optional Azure GPT-4.1 mini decision"]
-  M --> V["Server-side allowlist, provenance and validation"]
+  G -->|Eligible| M["Offline rules or optional Azure GPT-4.1 mini proposal"]
+  M --> V["Project-specific deterministic tool / field checks"]
   V -->|Not permitted| D
   V -->|Permitted| T["Synthetic read-only tools or in-memory staging"]
   T --> E["Structured decision and evidence"]
