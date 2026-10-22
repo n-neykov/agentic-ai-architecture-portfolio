@@ -120,7 +120,7 @@ class IntakeEngine:
         issues = validate(kind, fields)
         # A bank-account label must never bypass review because its value
         # failed the narrow extraction regex.
-        if re.search(r"(?im)^\\s*Bank Account\\s*:", text):
+        if re.search(r"(?im)^\s*Bank Account\s*:", text):
             if "bank_account" not in fields:
                 issues.append("invalid_bank_account_format")
             elif "sensitive_bank_details_require_review" not in issues:
