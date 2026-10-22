@@ -20,8 +20,8 @@ An independent architecture and engineering portfolio exploring a practical ente
 
 | Evidence | What it establishes | Verification status |
 |---|---|---|
-| **97 discovered automated tests** | Python unit, workflow and mocked-model regression coverage | Most recent reported run: **95 passed, 2 failed**; escaping fixes committed afterward. **Do not treat 97/97 as confirmed until rerun.** |
-| **10-scenario offline evaluation** | Deterministic Project 01 routing against known synthetic scenarios | Previously user-reported **10/10**; final revision not reconfirmed |
+| **97/97 automated tests passed (user-verified, 2026-10-22)** | Python unit, workflow and mocked-model regression coverage | Screenshot evidence shows **Ran 97 tests … OK**, including malformed-bank regressions; local run, not independently reproduced in CI. |
+| **10-scenario offline evaluation** | Deterministic Project 01 routing against known synthetic scenarios | Screenshot evidence shows **10/10 passed** in the offline baseline evaluation |
 | **Live Azure demonstration: P1** | Bounded multi-intent support, synthetic own-account reads, cross-account and high-risk preflight | User-observed, not an Azure model benchmark |
 | **Live Azure demonstration: P2** | Invoice staged with evidence; supplier agreement extracted with evidence and held for bank-detail review | User-observed, not measured extraction accuracy |
 | **Live Azure demonstration: P3** | Finance tool allowed for tenant A; tenant B request denied with `model_called=false` | User-observed, not verified production IAM |
@@ -90,7 +90,7 @@ To enable optional live inference, copy `.env.example` to a private `.env`, conf
 4. **Architecture:** Open the project-specific Mermaid diagrams and explain why authorization, review and tool arguments remain outside the LLM.
 5. **Engineering evidence:** Open the GitHub Actions run, automated tests and baseline evaluation; distinguish actual passing results from illustrative targets.
 
-[Reviewer walkthrough and screenshot checklist](docs/reviewer-walkthrough.md) · [Dashboard walkthrough](docs/dashboard.md) · [Project 01 case study](docs/case-study.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Threat model](docs/threat-model.md) · [Architecture decisions](decisions/)
+[Dashboard walkthrough](docs/dashboard.md) · [Project 01 case study](docs/case-study.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Threat model](docs/threat-model.md) · [Architecture decisions](decisions/)
 
 ## Production boundaries
 
