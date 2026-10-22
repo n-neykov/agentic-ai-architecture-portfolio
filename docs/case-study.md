@@ -25,7 +25,7 @@ The language model assists with bounded decisions but never becomes the source o
 
 ## Observed demonstration evidence
 
-Before the 12-FAQ update, the user reported **53/53 automated tests passing** and **10/10 baseline synthetic evaluation scenarios passing**. Live Foundry tests demonstrated multi-intent responses and account-scope behavior. Expanded FAQ tests require a fresh verification run.
+The user previously confirmed **10/10 deterministic baseline evaluation scenarios** and live Foundry multi-intent/account-scope demonstrations. The most recent portfolio-wide run discovered 97 tests and reported two failures in newly added Project 02 malformed-bank fixtures; fixes have been committed but not yet retested. No passing count for the final revision is claimed.
 
 ## Hypothetical pilot targets — not achieved metrics
 
