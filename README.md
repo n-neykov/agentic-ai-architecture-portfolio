@@ -90,7 +90,7 @@ To enable optional live inference, copy `.env.example` to a private `.env`, conf
 4. **Architecture:** Open the project-specific Mermaid diagrams and explain why authorization, review and tool arguments remain outside the LLM.
 5. **Engineering evidence:** Open the GitHub Actions run, automated tests and baseline evaluation; distinguish actual passing results from illustrative targets.
 
-[Dashboard walkthrough](docs/dashboard.md) · [Project 01 case study](docs/case-study.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Threat model](docs/threat-model.md) · [Architecture decisions](decisions/)
+[Reviewer walkthrough and screenshot checklist](docs/reviewer-walkthrough.md) · [Dashboard walkthrough](docs/dashboard.md) · [Project 01 case study](docs/case-study.md) · [Evaluation methodology](evaluations/evaluation-plan.md) · [Threat model](docs/threat-model.md) · [Architecture decisions](decisions/)
 
 ## Production boundaries
 
