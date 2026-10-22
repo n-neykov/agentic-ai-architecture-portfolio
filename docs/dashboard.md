@@ -35,7 +35,7 @@ Project 02 provides **Overview**, **Document execution**, and **Architecture**, 
 
 Project 03 provides **Overview**, **Governed tool execution**, and **Architecture**, including **Deterministic offline** and **AI tool selection · Azure Foundry** routing. Demonstrate role and cross-tenant denials, approval-required writes, and structured audit evidence. Verification flags and approvals are simulated.
 
-Architecture views use consistent responsive stages and distinct permitted/blocked outcomes. Branching Mermaid diagrams in the project READMEs and Project 01 architecture documentation show the explicit decision logic.
+Architecture tabs show responsive, vertically organized execution stages. For explicit yes/no decisions, failure routes and offline-versus-Azure branches, use the project-specific Mermaid diagrams linked from the portfolio README. The visual stage cards are explanatory views, not executable traces.
 
 ## Screenshot walkthrough
 
@@ -46,7 +46,7 @@ Architecture views use consistent responsive stages and distinct permitted/block
 5. Run `Wire $500`; expected `escalate`, zero model calls.
 6. Run the baseline **Evaluation** and capture the actual report, plus separate terminal test results.
 
-Screenshots should show the **actual observed result**, not a mockup. Record the branch and commit SHA and label the system as a synthetic prototype.
+Screenshots should show the **actual observed result**, not a mockup. Do not place historical test counts or pass badges inside screenshots unless verified against the same commit. Record the branch and commit SHA and label the system as a synthetic prototype.
 
 ## Limits
 
