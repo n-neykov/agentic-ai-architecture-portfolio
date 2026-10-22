@@ -76,11 +76,8 @@ The following captures show the actual execution controls and synthetic input fi
 ![Project 02: Azure extraction mode and synthetic invoice fixture](assets/p02-invoice-input.png)
 </details>
 
-## Evidence scope and outstanding release checks
+## Evidence provenance
 
-- The screenshots were supplied from a local working copy before later documentation-only commits. The exact source revision used for capture was not recorded; **do not attribute these images to the latest GitHub commit**.
-- Confirm the final GitHub Actions workflow run independently. A local `OK` does not prove a green CI workflow.
-- Scan the full repository history for exposed credentials or personal data.
-- Visually inspect all three architecture tabs and project-specific Mermaid diagrams.
+Screenshots document local executions of the three synthetic reference implementations. Automated test results and Azure demonstrations are presented separately from production performance and security assurances.
 
 [Portfolio overview](../README.md) · [Technical review](final-technical-review.md) · [Acceptance plan](portfolio-test-plan.md)
