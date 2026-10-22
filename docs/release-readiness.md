@@ -10,8 +10,8 @@
 | Synthetic read-only account adapter | Implemented | Session-scoped fixture balances; demo identity is unverified |
 | Cross-account and high-risk screening | Implemented for known patterns | User-tested zero-model-call denials; not comprehensive security assurance |
 | Approved FAQ knowledge base | **12 records implemented** | 12 synthetic FAQ records; latest portfolio-wide suite requires rerun |
-| Baseline evaluation | **10 scenarios** | Previously reported 10/10; rerun on final commit; deterministic baseline only |
-| Unit and workflow tests | **97 discovered; final result pending** | Most recent run had 2 Project 02 fixture failures; escaping fixes committed afterward |
+| Baseline evaluation | **10 scenarios** | 2026-10-22 screenshot shows passed=10, total=10; deterministic baseline only |
+| Unit and workflow tests | **97/97 user-verified passing** | Terminal screenshot dated 2026-10-22 shows Ran 97 tests / OK; CI status independently unverified |
 | Dashboard and architecture visualization | Implemented | Two Project 01 modes; final visual smoke check not independently verified |
 | CI | Configured | Workflow defined for pushes/PRs; inspect the latest GitHub Actions run before claiming success |
 | Verified OIDC/Entra identity | Not implemented | Production blocker |
@@ -24,12 +24,12 @@
 
 ## Release checklist for portfolio handoff
 
-- [ ] Run updated Python compilation and complete test suite on the final commit.
-- [ ] Confirm 10/10 baseline evaluation after changes.
+- [x] Run complete test suite after regression corrections (user-supplied terminal screenshot: 97/97, 2026-10-22). Compilation separately not evidenced.
+- [x] Confirm 10/10 baseline evaluation after changes (user-supplied terminal screenshot, 2026-10-22).
 - [ ] Verify representative new FAQ topics in live Foundry mode.
 - [ ] Capture screenshots: overview, multi-intent, cross-account denial, evaluation, architecture.
 - [ ] Confirm no secrets or real customer information in commits or screenshots.
 - [ ] Record final commit SHA and CI status.
-- [ ] Review README and architecture labels against actual execution behavior.
+- [x] Review README and architecture labels against observed behavior in the supplied execution screenshots. Architecture-tab rendering still requires separate visual confirmation.
 
 **Never describe this as a production banking application or a certified security control.**
