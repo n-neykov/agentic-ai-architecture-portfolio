@@ -1,45 +1,86 @@
 # Demonstration evidence
 
-**Synthetic reference implementations · User-executed acceptance evidence, 2026-10-22**
+**Synthetic reference implementations · Local acceptance demonstrations · 2026-10-22**
 
-The screenshots in the evidence set were captured from local Streamlit runs and show real observed outcomes, not generated mockups. They demonstrate selected success, denial and review paths; they do **not** establish production security, performance, or availability.
+The screenshots below are actual user-captured Streamlit executions and terminal outputs. They demonstrate specific approved, denied and review paths; they are **not** claims of production identity assurance, model accuracy, security certification, or availability.
 
-| Project | Evidence | Observed result |
-|---|---|---|
-| 01 · Secure Customer Service | Azure multi-intent request from simulated `user-001` | `multi`, `allow`, two model calls, fictional $120 balance and hours FAQ evidence |
-| 01 · Secure Customer Service | Cross-account balance request from `user-001` for `user-002` | `deny`, zero model calls, no private account data |
-| 02 · Intelligent Document Processing | Valid synthetic invoice in Azure mode | `staged`; vendor, invoice, amount, currency and source-line evidence |
-| 02 · Intelligent Document Processing | Synthetic supplier agreement with bank account | `needs_review`; `sensitive_bank_details_require_review`; source-line evidence |
-| 03 · Governed Enterprise Agent Platform | Finance reader, tenant A, finance procedure request | `allowed`; model called; synthetic tenant-A finance record |
-| 03 · Governed Enterprise Agent Platform | Finance reader, tenant A, requested tenant B | `denied`; `cross_tenant_access`; `model_called=false` |
-| Engineering | Local unit test terminal output | `Ran 97 tests ... OK` |
-| Engineering | Deterministic baseline CLI evaluation | `passed: 10`, `total: 10` |
+## Project 01 · Secure Customer Service
 
-## Screenshot publication guidance
+### Bounded Azure multi-intent execution
 
-Approved screenshot assets have been reviewed in the conversation but **have not yet been uploaded to this GitHub repository**. This page intentionally does not embed nonexistent image links.
+Simulated `user-001` requested fictional business hours and their own synthetic balance. The application reported `multi`, policy `allow`, two completed GPT-4.1 mini model calls, an approved `account_balance` + `faq_lookup` tool selection, and the corresponding FAQ evidence ID.
 
-Recommended paths for the selected images, after uploading:
+![Project 01: successful Azure multi-intent request and execution metadata](assets/p01-azure-multi-intent.png)
 
-```text
-docs/assets/
-  p01-azure-multi-intent.png
-  p01-cross-account-denied.png
-  p02-azure-invoice-staged.png
-  p02-bank-details-review.png
-  p03-tenant-a-finance-allowed.png
-  p03-cross-tenant-denied.png
-  verification-97-tests.png
-  verification-10-baseline-scenarios.png
-```
+### Cross-account request denied before inference
 
-Before publishing, crop extraneous desktop chrome and check screenshots for secrets, real identities, tokens, customer data and accidental personal paths. Include only synthetic fixtures. Avoid representing a local screenshot as GitHub CI evidence.
+The same demo identity requested `user002`'s balance. The application returned `deny`, policy `deny`, zero model calls and no balance data. This demonstrates the implemented known-pattern pre-inference boundary, not production IAM.
 
-## Verification still outstanding
+![Project 01: cross-account denial with zero model calls](assets/p01-cross-account-denied.png)
 
-- Confirm the exact GitHub Actions workflow run is green for the final commit.
-- Scan Git history for credentials; `.gitignore` does not prove historical absence.
-- Visually inspect all three architecture tabs and Mermaid diagrams at normal browser zoom.
-- Record the exact commit used for local screenshot capture if available; do not infer it from later documentation commits.
+## Project 02 · Intelligent Document Processing
+
+### Valid synthetic invoice staged
+
+Azure-assisted extraction produced `vendor_id`, `invoice_number`, `amount` and `currency`, each associated with a labeled source line. Validation permitted staging into the **synthetic in-memory outbox**.
+
+![Project 02: staged synthetic invoice with source-line evidence](assets/p02-azure-invoice-staged.png)
+
+### Sensitive agreement held for review
+
+A synthetic supplier agreement containing bank-account details was classified `needs_review` with issue `sensitive_bank_details_require_review`. Extracted fields were associated with labeled source-line evidence. No external supplier system was updated.
+
+![Project 02: bank-detail agreement requires simulated human review](assets/p02-bank-details-review.png)
+
+## Project 03 · Governed Enterprise Agent Platform
+
+### Authorized tenant-A read
+
+The simulated finance reader requested a finance reporting procedure within tenant A. The application reported `allowed`, `tenant_role_and_tool_authorized`, `model_called=True` and a synthetic finance procedure record.
+
+![Project 03: authorized tenant-A finance tool request](assets/p03-tenant-a-finance-allowed.png)
+
+### Cross-tenant read rejected before inference
+
+The tenant-A principal requested tenant B. The application returned `denied`, `cross_tenant_access`, `model_called=False` and no records. The audit table shows the denied decision.
+
+![Project 03: cross-tenant access denied before model invocation](assets/p03-cross-tenant-denied.png)
+
+## Automated regression and baseline evaluation
+
+### 97 automated tests passing
+
+The user-run local Python suite completed **97 tests, zero failures/errors** on 2026-10-22. The screenshot includes the final `Ran 97 tests … OK` summary. These tests use synthetic fixtures and mocked inference where appropriate.
+
+![Terminal evidence: 97 automated tests completed successfully](assets/verification-97-tests.png)
+
+### 10 deterministic baseline scenarios passing
+
+The offline evaluation returned `passed: 10` and `total: 10` across public FAQ, own-account, anonymous, cross-account, high-risk and prompt-injection scenarios. This is **not** an Azure model benchmark.
+
+![Terminal evidence: 10 of 10 deterministic evaluation scenarios passed](assets/verification-10-baseline-scenarios.png)
+
+## Additional application context
+
+The following captures show the actual execution controls and synthetic input fixtures used for the demonstrations:
+
+<details>
+<summary>Project 01 execution form</summary>
+
+![Project 01: Azure mode, demo identity and multi-intent request](assets/p01-request-setup.png)
+</details>
+
+<details>
+<summary>Project 02 synthetic invoice input</summary>
+
+![Project 02: Azure extraction mode and synthetic invoice fixture](assets/p02-invoice-input.png)
+</details>
+
+## Evidence scope and outstanding release checks
+
+- The screenshots were supplied from a local working copy before later documentation-only commits. The exact source revision used for capture was not recorded; **do not attribute these images to the latest GitHub commit**.
+- Confirm the final GitHub Actions workflow run independently. A local `OK` does not prove a green CI workflow.
+- Scan the full repository history for exposed credentials or personal data.
+- Visually inspect all three architecture tabs and project-specific Mermaid diagrams.
 
 [Portfolio overview](../README.md) · [Technical review](final-technical-review.md) · [Acceptance plan](portfolio-test-plan.md)
