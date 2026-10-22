@@ -5,13 +5,13 @@
 | Capability | Status | Evidence / boundary |
 |---|---|---|
 | Policy-first LangGraph baseline | Implemented | Offline workflow and baseline evaluation |
-| Bounded v2 multi-intent agent | Implemented | Offline tests and observed in local live-Azure demonstrations live dashboard runs |
-| Azure Foundry GPT-4.1 mini Responses API | **Live validated by user** | Working local project endpoint/deployment; no performance certification |
+| Bounded v2 multi-intent agent | Implemented | Offline tests and locally recorded Azure dashboard executions |
+| Azure Foundry GPT-4.1 mini Responses API | **Validated in local Azure demonstrations** | Working local project endpoint/deployment; no performance certification |
 | Synthetic read-only account adapter | Implemented | Session-scoped fixture balances; demo identity is unverified |
-| Cross-account and high-risk screening | Implemented for known patterns | User-tested zero-model-call denials; not comprehensive security assurance |
+| Cross-account and high-risk screening | Implemented for known patterns | Recorded zero-model-call denials; not comprehensive security assurance |
 | Approved FAQ knowledge base | **12 records implemented** | 12 synthetic FAQ records; local 97-test suite passed 2026-10-22 |
 | Baseline evaluation | **10 scenarios** | 2026-10-22 screenshot shows passed=10, total=10; deterministic baseline only |
-| Unit and workflow tests | **97/97 locally verified passing** | Terminal screenshot dated 2026-10-22 shows Ran 97 tests / OK; CI status independently unverified |
+| Unit and workflow tests | **97/97 passing in local acceptance run** | Terminal screenshot dated 2026-10-22 shows Ran 97 tests / OK; CI status independently unverified |
 | Dashboard and architecture visualization | Implemented | Two Project 01 modes; final visual smoke check not independently verified |
 | CI | Configured | Workflow defined for pushes/PRs; inspect the latest GitHub Actions run before claiming success |
 | Verified OIDC/Entra identity | Not implemented | Production blocker |
