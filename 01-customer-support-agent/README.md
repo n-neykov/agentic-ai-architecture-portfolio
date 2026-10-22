@@ -1,6 +1,6 @@
 # Project 01 — Secure Customer Service Agent
 
-**Status: functional synthetic prototype; live Azure AI Foundry GPT-4.1 mini integration user-verified.**
+**Status: functional synthetic prototype; live Azure AI Foundry GPT-4.1 mini integration locally verified.**
 
 ## Business scenario
 
@@ -52,7 +52,7 @@ The CLI exposes legacy/baseline and bounded-agent paths; the **Agent v2** experi
 
 ## Validation and limitations
 
-The user supplied screenshots on **2026-10-22** showing **97/97 portfolio-wide automated tests passing** (including the corrected malformed-bank regressions) and **10/10 deterministic baseline evaluation scenarios passing**. These are local run results, not independently verified GitHub Actions results. Live Foundry demonstrations were user-observed, not benchmarked. See [portfolio evidence](../README.md#engineering-evidence).
+Local screenshots captured **2026-10-22** show **97/97 portfolio-wide automated tests passing** (including the corrected malformed-bank regressions) and **10/10 deterministic baseline evaluation scenarios passing**. These are local run results, not independently verified GitHub Actions results. Live Foundry demonstrations were observed in local live-Azure demonstrations, not benchmarked. See [portfolio evidence](../README.md#engineering-evidence).
 
 The demo identity is caller-selected and **not authenticated**. FAQ retrieval is keyword-based, not Azure AI Search or semantic RAG. There is no production CRM, staffed review queue, real transaction tool, production observability, or measured cost/SLA.
 
