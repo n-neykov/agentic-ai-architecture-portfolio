@@ -26,7 +26,7 @@ A fictional financial-services support operation wants to automate repetitive su
 - **Escalated:** known sensitive operations, unsupported questions, missing evidence, or model/tool-selection failures.
 - **Never available:** transfers, writes, real customer data, arbitrary account-ID tool arguments.
 
-The v2 agent performs deterministic intent planning and requires matching model-selected tools when live mode is used. It is **bounded orchestration**, not open-ended autonomous planning. The offline LangGraph baseline and v2 AI mode are intentionally different implementations.
+The v2 agent performs deterministic intent planning and requires matching model-selected tools when live mode is used. For multi-intent requests, the model is asked to nominate a tool separately for each preplanned intent, sometimes using a canonical prompt rather than the complete original request. It is **bounded orchestration**, not open-ended autonomous planning. The offline LangGraph baseline and v2 AI mode are intentionally different implementations.
 
 ## Example live demonstrations
 
@@ -52,7 +52,7 @@ The CLI exposes legacy/baseline and bounded-agent paths; the **Agent v2** experi
 
 ## Validation and limitations
 
-Before the FAQ expansion, the user confirmed **53 passing tests**, **10/10 synthetic baseline evaluation scenarios**, and working live Foundry demonstrations. The added FAQ regression tests need to be rerun; do not infer an updated pass count.
+The portfolio-wide suite most recently reported **97 tests with two failures** in newly added Project 02 malformed-bank fixtures; escaping corrections have since been committed and require rerun. The **10/10 synthetic baseline evaluation** was confirmed previously, not on the final revision. Live Foundry demonstrations were user-observed, not benchmarked. See [portfolio evidence](../README.md#engineering-evidence).
 
 The demo identity is caller-selected and **not authenticated**. FAQ retrieval is keyword-based, not Azure AI Search or semantic RAG. There is no production CRM, staffed review queue, real transaction tool, production observability, or measured cost/SLA.
 
